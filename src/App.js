@@ -1,8 +1,7 @@
-import Login from "./components/login";
-import './index.css';
+import Login from './pages/login'
 function App() {
   return (
-    <div className="App">
+    <div>
       <Login/>
     </div>
   );

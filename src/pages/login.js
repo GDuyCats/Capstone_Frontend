@@ -1,5 +1,5 @@
 import React from 'react'
-import background from '../asset/dez1s4d-02f83af8-09a1-40ba-a4c6-54b6dd93965a.jpg'
+import background from '../assets/dez1s4d-02f83af8-09a1-40ba-a4c6-54b6dd93965a.jpg'
 function login() {
   return (
     //loginPage
@@ -46,5 +46,4 @@ function login() {
 
   )
 }
-
-export default login
+export default login;
