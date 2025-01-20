@@ -11,11 +11,11 @@ function App() {
     <Routes>
       <Route path="/" element={<LayoutCom />}>
         <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<Login />} />
         <Route path="/project/:id" element={<ProjectDetailPage />} />{" "}
         <Route path="/create-project" element={<CreateProjectPage />} />{" "}
         <Route path="/task" element={<TaskPage />} />
       </Route>
+      <Route path="/login" element={<Login />} />
     </Routes>
   );
 }

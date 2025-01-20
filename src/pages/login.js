@@ -1,7 +1,7 @@
 import React from "react";
-import LoginForm from "../components/loginpage/loginform";
+import LoginForm from "../components/Loginpage/Loginform";
 import background from "../assets/maxresdefault.jpg";
-function login() {
+function Login() {
   return (
     <div class="flex justify-center min-h-screen bg-black">
       <div class='flex flex-col bg-black overflow-x-hidden h-screen overflow-y-auto'>
@@ -18,4 +18,4 @@ function login() {
     </div>
   )
 }
-export default login;
+export default Login;
