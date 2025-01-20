@@ -1,6 +1,6 @@
-import React from 'react'
-import LoginForm from '../components/loginpage/Loginform'
-import background from '../assets/maxresdefault.jpg'
+import React from "react";
+import LoginForm from "../components/loginpage/loginform";
+import background from "../assets/maxresdefault.jpg";
 function login() {
   return (
     <div class="flex justify-center min-h-screen bg-black">
