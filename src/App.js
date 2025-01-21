@@ -1,10 +1,11 @@
 import { Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
-import LayoutCom from "./components/Layout/LayoutCom";
 import HomePage from "./pages/HomePage";
-import ProjectDetailPage from "./pages/ProjectDetailPage";
 import TaskPage from "./pages/TaskPage";
+import LayoutCom from "./components/Layout/LayoutCom";
+import ProjectDetailPage from "./pages/ProjectDetailPage";
 import CreateProjectPage from "./pages/CreateProjectPage";
+import LoginLayout from "./components/Layout/loginlayout/LoginLayout";
 
 function App() {
   return (
@@ -15,7 +16,10 @@ function App() {
         <Route path="/create-project" element={<CreateProjectPage />} />{" "}
         <Route path="/task" element={<TaskPage />} />
       </Route>
-      <Route path="/login" element={<Login />} />
+      <Route path="/" element={<LoginLayout />}>
+        <Route path="/login" element={<Login />} />
+      </Route>
+
     </Routes>
   );
 }

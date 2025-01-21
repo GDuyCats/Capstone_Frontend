@@ -2,7 +2,7 @@ import React from 'react'
 import Otherlogin from './Otherlogin'
 function Loginform() {
     return (
-        <div class='flex flex-col scale-110 lg:scale-100'>
+        <div class='flex flex-col '>
             <div class='relative'>
                 <h1 class="absolute text-white font-extrabold w-[300px] text-3xl -top-[100px] -left-[85px] lg:-left-[400px] lg:-top-[200px] z-50">Đăng nhập</h1>
                 <div class='absolute justify-center h-screen w-auto bg-none top-[30px] -left-[140px] lg:w-[700px] lg:h-auto lg:bg-white lg:p-5 lg:-top-[120px] lg:-left-[400px] rounded-sm transition-transform duration-300 hover:scale-105'>
