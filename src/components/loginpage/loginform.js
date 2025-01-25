@@ -2,7 +2,7 @@ import React from 'react'
 import Otherlogin from './Otherlogin'
 function Loginform() {
     return (
-        <div class='flex flex-col scale-110 lg:scale-100'>
+        <div class='flex flex-col '>
             <div class='relative'>
                 <h1 class="absolute text-white font-extrabold w-[300px] text-3xl -top-[100px] -left-[85px] lg:-left-[400px] lg:-top-[200px] z-50">Đăng nhập</h1>
                 <div class='absolute justify-center h-screen w-auto bg-none top-[30px] -left-[140px] lg:w-[700px] lg:h-auto lg:bg-white lg:p-5 lg:-top-[120px] lg:-left-[400px] rounded-sm transition-transform duration-300 hover:scale-105'>
@@ -12,13 +12,13 @@ function Loginform() {
                             {/*Username*/}
                             <div class="bg-none lg:bg-white p-4 ">
                                 <div class="relative bg-inherit">
-                                    <input type="text" id="username" name="username" class="transition-transform duration-300 hover:scale-105 peer bg-transparent w-[250px] lg:w-[300px] h-[40px] rounded-lg lg:text-black text-gray-200 placeholder-transparent ring-2 px-2 ring-gray-500 focus:ring-sky-600 focus:outline-none focus:border-rose-600" placeholder="" /><label for="username" class="text-sm absolute cursor-text left-0 -top-5 lg:-top-3 text-white lg:text-gray-500 bg-inherit mx-1 px-1 peer-placeholder-shown:text-base peer-placeholder-shown:text-white lg:peer-placeholder-shown:text-gray-500 peer-placeholder-shown:top-2 peer-focus:-top-5 lg:peer-focus:-top-3 peer-focus:text-sky-600 peer-focus:text-sm transition-all">Tên tài khoản</label>
+                                    <input type="text" id="username" name="username" class="transition-transform duration-300 hover:scale-105 peer bg-transparent w-[250px] lg:w-[300px] h-[40px] rounded-lg lg:text-black text-gray-200 placeholder-transparent ring-2 px-2 ring-gray-500 focus:ring-sky-600 focus:outline-none focus:border-rose-600" placeholder="" /><label for="username" class="text-sm absolute cursor-text left-0 -top-[22px] lg:-top-3 text-white lg:text-gray-500 bg-inherit mx-1 px-1 peer-placeholder-shown:text-base peer-placeholder-shown:text-white lg:peer-placeholder-shown:text-gray-500 peer-placeholder-shown:top-2 peer-focus:-top-6 lg:peer-focus:-top-3 peer-focus:text-sky-600 peer-focus:text-sm transition-all">Tên tài khoản</label>
                                 </div>
                             </div>
                             {/*Password*/}
                             <div class="bg-inherit lg:bg-white p-4 -mt-1">
                                 <div class="relative bg-inherit">
-                                    <input type="password" id="password" name="password" class="transition-transform duration-300 hover:scale-105 peer bg-transparent w-[250px] lg:w-[300px] h-[40px] rounded-lg lg:text-black text-gray-200 placeholder-transparent ring-2 px-2 ring-gray-500 focus:ring-sky-600 focus:outline-none focus:border-rose-600" placeholder="" /><label for="password" class="text-sm absolute cursor-text left-0 -top-5 lg:-top-3 text-white lg:text-gray-500 bg-inherit mx-1 px-1 peer-placeholder-shown:text-base peer-placeholder-shown:text-white lg:peer-placeholder-shown:text-gray-500 peer-placeholder-shown:top-2 peer-focus:-top-5 lg:peer-focus:-top-3 peer-focus:text-sky-600 peer-focus:text-sm transition-all">Mật khẩu</label>
+                                    <input type="password" id="password" name="password" class="transition-transform duration-300 hover:scale-105 peer bg-transparent w-[250px] lg:w-[300px] h-[40px] rounded-lg lg:text-black text-gray-200 placeholder-transparent ring-2 px-2 ring-gray-500 focus:ring-sky-600 focus:outline-none focus:border-rose-600" placeholder="" /><label for="password" class="text-sm absolute cursor-text left-0 -top-[22px] lg:-top-3 text-white lg:text-gray-500 bg-inherit mx-1 px-1 peer-placeholder-shown:text-base peer-placeholder-shown:text-white lg:peer-placeholder-shown:text-gray-500 peer-placeholder-shown:top-2 peer-focus:-top-6 lg:peer-focus:-top-3 peer-focus:text-sky-600 peer-focus:text-sm transition-all">Mật khẩu</label>
                                 </div>
                             </div>
 
