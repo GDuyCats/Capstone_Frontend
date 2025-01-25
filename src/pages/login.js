@@ -1,5 +1,5 @@
 import React from 'react'
-import LoginForm from '../components/loginpage/Loginform'
+import LoginForm from '../components/Loginpage/Loginform'
 import background from '../assets/maxresdefault.jpg'
 function login() {
   return (
