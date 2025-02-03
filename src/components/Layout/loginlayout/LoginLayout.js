@@ -4,11 +4,11 @@ import Header from './header/Header'
 import Footer from './footer/Footer'
 function LoginLayout() {
     return (
-        <>
+        <div>
             <Header />
             <Outlet />
             <Footer />
-        </>
+        </div>
     )
 }
 

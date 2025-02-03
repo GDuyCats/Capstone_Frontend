@@ -2,9 +2,9 @@ import React from 'react'
 import Otherlogin from './Otherlogin'
 function Loginform() {
     return (
-        <div class='flex flex-col '>
+        <div class='flex flex-col'>
             <div class='relative'>
-                <h1 class="absolute text-white font-extrabold w-[300px] text-3xl -top-[100px] -left-[85px] lg:-left-[400px] lg:-top-[200px] z-50">Đăng nhập</h1>
+                <h1 class="absolute text-white font-extrabold w-[300px] text-3xl -top-[50px] -left-[85px] lg:-left-[400px] lg:-top-[200px] z-50">Đăng nhập</h1>
                 <div class='absolute justify-center h-screen w-auto bg-none top-[30px] -left-[140px] lg:w-[700px] lg:h-auto lg:bg-white lg:p-5 lg:-top-[120px] lg:-left-[400px] rounded-sm transition-transform duration-300 hover:scale-105'>
                     {/* <div class='h-full w-screen lg:h-auto bg-none lg:bg-white pt-20 lg:p-5 absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 rounded-sm transition-transform duration-300 hover:scale-105'> */}
                     <div class="flex flex-col lg:flex-row">
@@ -40,7 +40,7 @@ function Loginform() {
                         {/*Div cho cái đường viền*/}
                         <div class="relative mr-0 lg:mr-4 my-1 rounded-lg bg-gradient-to-tr from-pink-600 to-blue-600 p-0.5 shadow-lg"></div>
 
-                        {/*Facebook*/}
+                        {/*Đăng nhập bằng phương thức khác*/}
                         <div>
                             <label class='transition-transform duration-300 hover:scale-105 text-blue-400 text-xs font-bold block text-center mb-2'>HOẶC ĐĂNG NHẬP BẰNG NỀN TẢNG KHÁC</label>
                             <Otherlogin />
