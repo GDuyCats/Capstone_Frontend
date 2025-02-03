@@ -2,7 +2,7 @@ import React from 'react'
 
 function Footer() {
     return (
-        <div className='bg-steam h-[150px] w-full absolute top-[850px] py-8 text-white/50 text-sm'>
+        <div className='bg-steam h-auto w-full absolute top-[700px] lg:top-[850px] text-white/50 text-sm overflow-y-hidden py-8'>
             <div className='container mx-auto px-4'>
                 <div className='flex justify-center items-center space-x-28'>
                     <div className='flex flex-col items-center gap-4'>
@@ -14,7 +14,7 @@ function Footer() {
                     <div className='flex gap-4'>
                         <a href="#" className='hover:text-white'>Privacy Policy</a>
                         <a href="#" className='hover:text-white'>Legal</a>
-                        <a href="#" className='hover:text-white'>Steam Subscriber Agreement</a>
+                        <a href="#" className='hover:text-white'>Subscriber Agreement</a>
                     </div>
                 </div>
             </div>

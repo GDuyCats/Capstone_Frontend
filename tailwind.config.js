@@ -17,7 +17,7 @@ module.exports = {
         '1/6': '16.666%',
       },
       screens: {
-        'zoom-175': {'raw': '(min-width: 1024px) and (zoom: 175%)'},
+        "zoom-150": "1280px"
       },
       colors: {
         'steam': '#171D25',
