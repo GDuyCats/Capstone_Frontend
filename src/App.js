@@ -1,5 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
+import Register from "./pages/Register"
 import HomePage from "./pages/HomePage";
 import TaskPage from "./pages/TaskPage";
 import LayoutCom from "./components/Layout/LayoutCom";
@@ -18,8 +19,8 @@ function App() {
       </Route>
       <Route path="/" element={<LoginLayout />}>
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
       </Route>
-
     </Routes>
   );
 }

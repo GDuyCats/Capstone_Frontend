@@ -21,6 +21,9 @@ module.exports = {
       },
       colors: {
         'steam': '#171D25',
+        'blue_steam':'#1997E2',
+        'blue_steam_login': "#2C75FF",
+        'gray':'#AFAFAF',
       }
     },
   },

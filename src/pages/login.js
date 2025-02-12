@@ -1,10 +1,27 @@
 import React from "react";
+import { Layout } from "antd";
 import LoginForm from "../components/Loginpage/Loginform";
 import background from "../assets/maxresdefault.jpg";
+const { Content } = Layout;
 function Login() {
   return (
-     <section class="flex justify-center bg-steam">
-      <div class='flex flex-col bg-steam overflow-x-hidden xl:overflow-y-hidden h-screen'>
+    <Layout class="flex w-screen min-h-screen">
+      <Layout>
+        <Content class="flex flex-col relative bg-steam overflow-x-hidden xl:overflow-y-hidden">
+          <div class="absolute inset-0 w-full h-full ">
+            <img src={background} class="hidden sm:block w-full h-full object-top object-cover xl:object-scale-down" />
+          </div>
+
+          <div className="relative z-10 flex justify-center items-start min-h-screen mt-10">
+            <LoginForm />
+          </div>
+        </Content>
+      </Layout>
+    </Layout>
+  )
+}
+export default Login;
+{/* <div class='flex flex-col bg-steam overflow-x-hidden xl:overflow-y-hidden h-screen'>
         <div class='relative'>
           <img src={background} class='w-auto h-auto object-none xl:object-scale-down object-top' />
           <div class="absolute inset-0 bg-gradient-to-r from-steam via-transparent to-steam">
@@ -14,8 +31,4 @@ function Login() {
             <LoginForm />
           </div>
         </div>
-      </div>
-    </section> 
-  )
-}
-export default Login;
+      </div> */}
