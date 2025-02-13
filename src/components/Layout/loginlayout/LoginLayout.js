@@ -10,14 +10,12 @@ const { Content } = Layout;
 
 function LoginLayout() {
     return (
-        <Layout class="min-h-screen flex flex-col">
+        <Layout class="min-h-screen flex flex-col relative">
             <Header />
-            <div class="flex flex-1">
-                <Content class="flex flex-1">
-                    <Outlet />
-                </Content>
-            </div>
-            <Footer/>
+            <Content >
+                <Outlet />
+            </Content>
+            <Footer />
         </Layout>
     );
 }
