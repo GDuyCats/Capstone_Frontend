@@ -17,7 +17,7 @@ function LoginLayout() {
                     <Outlet />
                 </Content>
             </div>
-            {/* <Footer/> */}
+            <Footer/>
         </Layout>
     );
 }

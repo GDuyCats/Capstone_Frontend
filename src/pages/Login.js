@@ -1,8 +1,9 @@
 import React from "react";
 import { Layout } from "antd";
-import LoginForm from "../components/Loginpage/Loginform";
+import LoginForm from "../components/loginpage/Loginform";
 import background from "../assets/maxresdefault.jpg";
 const { Content } = Layout;
+
 function Login() {
   return (
     <Layout class="flex w-screen min-h-screen">
