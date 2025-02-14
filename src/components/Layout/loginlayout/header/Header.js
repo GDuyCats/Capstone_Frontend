@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-
+import { Link } from 'react-router-dom'
+import logo from "../../../../assets/470178924_1237016580742747_363138670710016911_n.jpg"
 function Header() {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -27,11 +28,17 @@ function Header() {
   }, [isOpen]);
 
   return (
-    <div className="relative">
-      <div className="bg-steam brightness-125 w-screen z-50 flex flex-row justify-center items-center space-x-10 h-[100px] relative">
+    <div className="relative bg-white">
+      <div className="bg-steam brightness-125 w-screen z-50 flex flex-row justify-center items-center h-[100px] relative space-x-[70px] md:pr-[80px] md:space-x-[10px] lg:pr-0 lg:space-x-[180px] xl:pr-0 xl:space-x-[270px] 2xl:pr-0 2xl:space-x-[280px]">
+        {/* Logo */}
+        <div className="flex flex-row justify-center items-center space-x-2 lg:mr-0 mr-10 hover:scale-105 transition-transform duration-300 cursor-pointer">
+          <img src={logo} alt="logo" className="w-[50px] rounded-full" />
+          <h1 className="text-slate-300 font-bold text-2xl">GAMEMKT</h1>
+        </div>
+
         {/* Nút hamburger cho màn hình nhỏ */}
         <button
-          className="md:hidden text-slate-200 absolute left-4"
+          className="flex md:hidden text-slate-200 absolute -left-14"
           onClick={() => setIsOpen(!isOpen)}
         >
           <svg
@@ -52,15 +59,25 @@ function Header() {
         {/* Menu cho màn hình lớn */}
         <div className="hidden md:flex md:space-x-10 ">
           {["CỬA HÀNG", "CỘNG ĐỒNG", "THÔNG TIN", "HỖ TRỢ"].map((item) => (
-            <h1
-              key={item}
-              className="text-slate-200 font-bold hover:brightness-150 cursor-pointer active:underline"
-            >
-              {item}
-            </h1>
+            <Link to={"/register"}>
+              <span
+                key={item}
+                className="text-slate-200 inline-block font-bold hover:scale-105 cursor-pointer transition-transform duration-300 active:underline"
+              >
+                {item}
+              </span>
+            </Link>
           ))}
         </div>
+        <div className="hidden lg:flex items-start cursor-pointer transition-transform duration-300 hover:scale-105 ">
+          <Link to={"/login"}>
+            <span className="text-slate-200 underline">
+              Đăng nhập
+            </span>
+          </Link>
+        </div>
       </div>
+
 
       {/* Menu dropdown cho màn hình nhỏ */}
       <AnimatePresence>
@@ -94,7 +111,7 @@ function Header() {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </div >
   );
 }
 
