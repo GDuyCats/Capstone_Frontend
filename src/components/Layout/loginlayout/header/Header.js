@@ -38,7 +38,7 @@ function Header() {
 
         {/* Nút hamburger cho màn hình nhỏ */}
         <button
-          className="flex md:hidden text-slate-200 absolute -left-14"
+          className="flex md:hidden text-slate-200 absolute -left-16"
           onClick={() => setIsOpen(!isOpen)}
         >
           <svg
