@@ -23,6 +23,7 @@ import {
   MoreOutlined,
 } from "@ant-design/icons";
 import { fetchProjectDetails } from "../api/apiClient";
+import { Link } from "react-router-dom";
 
 const ProjectDetailPage = () => {
   const { id } = useParams();
@@ -171,7 +172,7 @@ const ProjectDetailPage = () => {
         </Row>
 
         <Row gutter={[16, 16]} style={{ marginTop: "16px" }}>
-          <Col span={24}>
+          <Col span={12}>
             <Typography.Title level={5} style={{ marginBottom: "8px" }}>
               Skill Requirements:
             </Typography.Title>
@@ -182,6 +183,14 @@ const ProjectDetailPage = () => {
                 </li>
               ))}
             </ul>
+          </Col>
+          <Col span={12}>
+            <Typography.Title level={5} style={{ marginBottom: "8px" }}>
+              Start date:
+            </Typography.Title>
+            <Typography.Title level={5} style={{ marginBottom: "8px" }}>
+              End date:
+            </Typography.Title>
           </Col>
         </Row>
 
@@ -241,7 +250,7 @@ const ProjectDetailPage = () => {
                 avatar={<Avatar>{member.role}</Avatar>}
                 title={
                   <div style={{ display: "flex", alignItems: "center" }}>
-                    {member.name}{" "}
+                    <Link to="/profile/1">{member.name}</Link>{" "}
                     {member.role === "L" && (
                       <Tag
                         color="gold"
