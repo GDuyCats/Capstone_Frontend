@@ -21,9 +21,16 @@ module.exports = {
       },
       colors: {
         'steam': '#171D25',
+        'blue_steam': '#1997E2',
+        'blue_steam_login': "#2C75FF",
+        'gray': '#AFAFAF',
+        'header': '#171A21',
+        'header-2': '#2F3138'
       }
     },
   },
-  plugins: [],
+  plugins: [
+    require('tailwind-scrollbar')({ nocompatible: true }),
+],
 }
 

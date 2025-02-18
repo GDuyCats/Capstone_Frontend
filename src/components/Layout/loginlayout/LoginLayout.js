@@ -1,15 +1,23 @@
-import React from 'react'
-import { Outlet } from 'react-router-dom'
-import Header from './header/Header'
-import Footer from './footer/Footer'
+import React from 'react';
+import { Outlet } from 'react-router-dom';
+import Header from './header/Header';
+import Footer from './footer/Footer';
+import { Layout } from 'antd';
+import LayoutCom from '../LayoutCom';
+
+const { Content } = Layout;
+
+
 function LoginLayout() {
     return (
-        <div>
+        <Layout class="min-h-screen flex flex-col relative">
             <Header />
-            <Outlet />
+            <Content >
+                <Outlet />
+            </Content>
             <Footer />
-        </div>
-    )
+        </Layout>
+    );
 }
 
-export default LoginLayout
+export default LoginLayout;
