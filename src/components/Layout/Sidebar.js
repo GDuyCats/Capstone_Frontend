@@ -25,13 +25,16 @@ const Sidebar = () => {
           <Link to="/">Home</Link>
         </Menu.Item>
         <Menu.Item key="2">
-          <Link to="/project">Project</Link>
+          <Link to="/project/1">My Project</Link>
         </Menu.Item>
         <Menu.Item key="3">
-          <Link to="/create-project">Create Project</Link>
+          <Link to="/task">Task</Link>
         </Menu.Item>
         <Menu.Item key="4">
-          <Link to="/task">Task</Link>
+          <Link to="/create-project">Create Project</Link>
+        </Menu.Item>
+        <Menu.Item key="5">
+          <Link to="/games">MKT homepage</Link>
         </Menu.Item>
       </Menu>
     </div>
