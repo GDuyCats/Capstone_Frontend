@@ -9,6 +9,7 @@ import CreateProjectPage from "./pages/CreateProjectPage";
 import ProfilePage from "./pages/profilePage";
 import UserProfilePage from "./pages/UserProfilePage";
 import LoginLayout from "./components/Layout/loginlayout/LoginLayout";
+import RegisterLayout from "./components/Layout/registerlayout/RegisterLayout";
 import GamePage from "./pages/GamePage";
 import GameDetailPage from "./pages/GameDetailPage";
 
@@ -27,8 +28,13 @@ function App() {
       </Route>
       <Route path="/" element={<LoginLayout />}>
         <Route path="/login" element={<Login />} />
+      </Route>
+      <Route path="/" element={<RegisterLayout />}>
         <Route path="/register" element={<Register />} />
       </Route>
+
+
+
     </Routes>
   );
 }
