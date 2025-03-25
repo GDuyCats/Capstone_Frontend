@@ -1,276 +1,167 @@
-import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
-import placeholderpic from "../assets/landscape-placeholder-svgrepo-com.png";
+import React, { useEffect, useState } from "react";
+import { fetchProjectDetails } from "../api/apiClient";
 import {
+  Layout,
+  Typography,
   Row,
   Col,
-  Card,
-  Tag,
+  Tabs,
   Button,
-  Avatar,
-  List,
-  Typography,
-  Spin,
-  message,
-  Image,
-  Dropdown,
-  Menu,
+  Card,
+  Progress,
+  Statistic,
+  Modal,
+  Radio,
+  Input,
+  Form,
 } from "antd";
-import {
-  FileTextOutlined,
-  PlusCircleOutlined,
-  DownloadOutlined,
-  MoreOutlined,
-} from "@ant-design/icons";
-import { fetchProjectDetails } from "../api/apiClient";
-import { Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
+
+const { Content } = Layout;
+const { Title, Text, Paragraph } = Typography;
+const { TabPane } = Tabs;
 
 const ProjectDetailPage = () => {
+  const [pledgeModalVisible, setPledgeModalVisible] = useState(false);
+  const [selectedReward, setSelectedReward] = useState(null);
   const { id } = useParams();
-  const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [project, setProject] = useState(null);
 
   useEffect(() => {
-    const fetchProject = async () => {
-      try {
-        const response = await fetchProjectDetails(id);
+    fetchProjectDetails(id)
+      .then((response) => {
         setProject(response.data);
-      } catch (error) {
-        message.error(error.message || "Error fetching project data.");
-      } finally {
         setLoading(false);
-      }
-    };
-
-    fetchProject();
+      })
+      .catch((error) => {
+        console.error("Error fetching project details:", error);
+        setLoading(false);
+      });
   }, [id]);
 
-  if (loading) {
-    return (
-      <Spin tip="Loading project details..." style={{ marginTop: "20%" }} />
-    );
-  }
+  if (loading) return <p>Loading...</p>;
+  if (!project) return <p>Project not found</p>;
 
-  if (!project) {
-    return <Typography.Text type="danger">Project not found.</Typography.Text>;
-  }
+  const daysLeft = Math.ceil(
+    (new Date(project.endDate) - new Date()) / (1000 * 60 * 60 * 24)
+  );
+  const progressPercentage = (project.currentAmount / project.goalAmount) * 100;
 
-  const {
-    title,
-    description,
-    tags,
-    skills,
-    members,
-    status,
-    apkLink,
-    createdAt,
-    imageUrl,
-  } = project;
-
-  const placeholderImage = placeholderpic;
-
-  const handleMenuClick = (memberId, action) => {
-    switch (action) {
-      case "remove":
-        message.success(`Removed member with ID: ${memberId}`);
-        break;
-      default:
-        break;
-    }
-  };
-
-  const renderMemberActions = (member) => {
-    const menu = (
-      <Menu onClick={({ key }) => handleMenuClick(member.id, key)}>
-        <Menu.Item key="remove">Remove</Menu.Item>
-      </Menu>
-    );
-
-    return (
-      <Dropdown overlay={menu} trigger={["click"]}>
-        <Button
-          type="link"
-          icon={<MoreOutlined />}
-          style={{ fontSize: "18px" }}
-        />
-      </Dropdown>
-    );
+  const handlePledge = (values) => {
+    console.log("Pledge values:", values);
+    setPledgeModalVisible(false);
   };
 
   return (
-    <div
-      style={{
-        padding: "24px",
-        minHeight: "100vh",
-        backgroundColor: "#E4EAF1",
-      }}
-    >
-      <Card
-        title={<Typography.Title level={4}>{title}</Typography.Title>}
-        extra={
-          <Tag
-            color="blue"
-            style={{
-              background: "#CBD4F6",
-              color: "#333",
-              borderRadius: "8px",
-            }}
-          >
-            {status}
-          </Tag>
-        }
-        style={{
-          borderRadius: "12px",
-          border: "1px solid #D1D5DB",
-          boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
-          marginBottom: "24px",
-        }}
-      >
-        <Row gutter={[16, 16]}>
-          <Col span={4}>
-            <Image
-              src={imageUrl || placeholderImage}
-              style={{
-                width: "100%",
-                borderRadius: "8px",
-                border: "1px solid #D1D5DB",
-              }}
-              fallback={placeholderImage}
+    <Content style={{ padding: "24px" }}>
+      <Row gutter={[24, 24]}>
+        <Col span={16}>
+          <img
+            src={project.thumbnail}
+            alt={project.title}
+            style={{ width: "100%", borderRadius: 8 }}
+          />
+
+          <Tabs defaultActiveKey="1" style={{ marginTop: 24 }}>
+            <TabPane tab="About" key="1">
+              <Paragraph>{project.description}</Paragraph>
+            </TabPane>
+            <TabPane tab="Updates" key="2">
+              Project updates will be shown here
+            </TabPane>
+            <TabPane tab="Comments" key="3">
+              Community discussion
+            </TabPane>
+          </Tabs>
+        </Col>
+
+        <Col span={8}>
+          <Card>
+            <Progress
+              percent={Math.min(progressPercentage, 100)}
+              status="active"
             />
-          </Col>
-          <Col span={20}>
-            <Typography.Text
-              style={{
-                fontSize: "14px",
-                fontStyle: "italic",
-                color: "#6B7280",
-              }}
+            <Row gutter={[16, 16]}>
+              <Col span={24}>
+                <Statistic
+                  title="Pledged"
+                  value={project.currentAmount}
+                  prefix="$"
+                />
+                <Text type="secondary">of ${project.goalAmount} goal</Text>
+              </Col>
+              <Col span={12}>
+                <Statistic title="Backers" value={project.backers} />
+              </Col>
+              <Col span={12}>
+                <Statistic title="Days to go" value={daysLeft} />
+              </Col>
+            </Row>
+
+            <Button
+              type="primary"
+              size="large"
+              block
+              style={{ marginTop: 24 }}
+              onClick={() => setPledgeModalVisible(true)}
             >
-              Created at: {createdAt}
-            </Typography.Text>
-            <Typography.Title level={5} style={{ marginBottom: "8px" }}>
-              Description:
-            </Typography.Title>
-            <p style={{ marginTop: "8px" }}>{description}</p>
-            <div style={{ marginBottom: "10px" }}>
-              {tags.map((tag, index) => (
-                <Tag
-                  key={index}
-                  color="blue"
-                  style={{
-                    margin: "4px 4px 4px 0",
-                    background: "#CBD4F6",
-                    color: "#333",
-                    borderRadius: "8px",
-                  }}
-                >
-                  {tag}
-                </Tag>
-              ))}
-            </div>
-          </Col>
-        </Row>
+              Back this project
+            </Button>
+          </Card>
 
-        <Row gutter={[16, 16]} style={{ marginTop: "16px" }}>
-          <Col span={12}>
-            <Typography.Title level={5} style={{ marginBottom: "8px" }}>
-              Skill Requirements:
-            </Typography.Title>
-            <ul style={{ paddingLeft: "20px" }}>
-              {skills.map((skill, index) => (
-                <li key={index} style={{ lineHeight: "1.8" }}>
-                  {skill}
-                </li>
-              ))}
-            </ul>
-          </Col>
-          <Col span={12}>
-            <Typography.Title level={5} style={{ marginBottom: "8px" }}>
-              Start date:
-            </Typography.Title>
-            <Typography.Title level={5} style={{ marginBottom: "8px" }}>
-              End date:
-            </Typography.Title>
-          </Col>
-        </Row>
+          <Title level={4} style={{ marginTop: 24 }}>
+            Rewards
+          </Title>
+          {project.rewards.map((reward) => (
+            <Card key={reward.id} style={{ marginTop: 16 }}>
+              <Title level={5}>${reward.amount} or more</Title>
+              <Title level={4}>{reward.title}</Title>
+              <Paragraph>{reward.description}</Paragraph>
+              <Text type="secondary">
+                {reward.remainingQuantity} of {reward.limitedQuantity} remaining
+              </Text>
+            </Card>
+          ))}
+        </Col>
+      </Row>
 
-        {/* APK Upload Section */}
-        <Row gutter={[16, 16]} style={{ marginTop: "16px" }}>
-          <Col span={24}>
-            <Typography.Title level={5} style={{ marginBottom: "8px" }}>
-              APK:
-            </Typography.Title>
-            {apkLink ? (
-              <Button
-                type="primary"
-                icon={<DownloadOutlined />}
-                href={apkLink}
-                download
-                style={{
-                  borderRadius: "8px",
-                }}
-              >
-                Post APK
-              </Button>
-            ) : (
-              <Button
-                type="dashed"
-                icon={<PlusCircleOutlined />}
-                onClick={() => alert("Upload APK functionality")}
-                style={{
-                  borderRadius: "8px",
-                }}
-              >
-                Upload APK
-              </Button>
-            )}
-          </Col>
-        </Row>
-      </Card>
-
-      {/* Team Members Section */}
-      <Card
-        title={
-          <Typography.Title level={5} style={{ marginBottom: "8px" }}>
-            Members ({members.length}/5)
-          </Typography.Title>
-        }
-        style={{
-          borderRadius: "12px",
-          border: "1px solid #D1D5DB",
-          boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
-        }}
+      <Modal
+        title="Back this project"
+        visible={pledgeModalVisible}
+        onCancel={() => setPledgeModalVisible(false)}
+        footer={null}
+        width={600}
       >
-        <List
-          itemLayout="horizontal"
-          dataSource={members}
-          renderItem={(member) => (
-            <List.Item actions={[renderMemberActions(member)]}>
-              <List.Item.Meta
-                avatar={<Avatar>{member.role}</Avatar>}
-                title={
-                  <div style={{ display: "flex", alignItems: "center" }}>
-                    <Link to="/profile/1">{member.name}</Link>{" "}
-                    {member.role === "L" && (
-                      <Tag
-                        color="gold"
-                        style={{
-                          marginLeft: "8px",
-                          borderRadius: "6px",
-                        }}
-                      >
-                        Leader
-                      </Tag>
-                    )}
-                  </div>
-                }
-                description={<Typography.Text>{member.email}</Typography.Text>}
-              />
-            </List.Item>
-          )}
-        />
-      </Card>
-    </div>
+        <Form onFinish={handlePledge}>
+          <Form.Item name="rewardId" label="Select your reward">
+            <Radio.Group onChange={(e) => setSelectedReward(e.target.value)}>
+              {project.rewards.map((reward) => (
+                <Radio.Button key={reward.id} value={reward.id}>
+                  ${reward.amount} - {reward.title}
+                </Radio.Button>
+              ))}
+            </Radio.Group>
+          </Form.Item>
+
+          <Form.Item name="amount" label="Pledge amount">
+            <Input
+              prefix="$"
+              type="number"
+              min={
+                selectedReward
+                  ? project.rewards.find((r) => r.id === selectedReward).amount
+                  : 1
+              }
+            />
+          </Form.Item>
+
+          <Button type="primary" htmlType="submit" block>
+            Continue to payment
+          </Button>
+        </Form>
+      </Modal>
+    </Content>
   );
 };
 

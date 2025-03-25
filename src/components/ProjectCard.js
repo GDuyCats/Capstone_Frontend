@@ -1,88 +1,69 @@
 import React from "react";
-import { Card, Tag, Button, Row, Col, Avatar } from "antd";
-import { FileTextOutlined } from "@ant-design/icons";
+import { Card, Tag, Button, Row, Col, Progress, Typography } from "antd";
 import { Link } from "react-router-dom";
+import { ClockCircleOutlined, UserOutlined } from "@ant-design/icons";
+
+const { Title, Text } = Typography;
 
 const ProjectCard = ({ project }) => {
-  const maxMembers = 5;
-  const memberCount = project?.members?.length || 0;
-  const displayedMembers = project?.members?.slice(0, maxMembers) || [];
+  const daysLeft = Math.ceil(
+    (new Date(project?.endDate) - new Date()) / (1000 * 60 * 60 * 24)
+  );
+  const progressPercentage =
+    (project?.currentAmount / project?.goalAmount) * 100;
 
   return (
     <Card
-      style={{
-        borderRadius: "10px",
-        backgroundColor: "#E3EAFD",
-        boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
-        overflow: "hidden",
-      }}
-      bodyStyle={{ padding: "16px" }}
+      hoverable
+      cover={
+        <img
+          alt={project?.title}
+          src={project?.thumbnail}
+          style={{ height: 100, objectFit: "cover" }}
+        />
+      }
+      style={{ height: "100%" }}
     >
-      <Row gutter={[16, 16]} align="middle">
-        <Col span={6}>
-          <Avatar
-            shape="square"
-            size={64}
-            src={project?.thumbnail}
-            icon={<FileTextOutlined />}
-            style={{
-              border: "1px solid #ccc",
-              backgroundColor: "#f5f5f5",
-            }}
-          />
-        </Col>
+      <Title level={4}>{project?.title}</Title>
+      <Text type="secondary">by {project?.creator}</Text>
 
-        <Col span={18}>
-          <h3 style={{ margin: 0 }}>{project?.title}</h3>
-          <p style={{ margin: 0, fontSize: "12px", color: "#666" }}>
-            Created by: <strong>{project?.creator}</strong>
-          </p>
-          <p style={{ margin: 0, fontSize: "12px", color: "#666" }}>
-            Members:{" "}
-            <strong>
-              {memberCount}/{maxMembers}
-            </strong>{" "}
-          </p>
-        </Col>
-      </Row>
+      <Text style={{ display: "block", margin: "16px 0" }}>
+        {project?.description?.length > 150
+          ? `${project?.description?.substring(0, 150)}...`
+          : project?.description}
+      </Text>
 
-      <Row gutter={[16, 16]} style={{ marginTop: "10px" }}>
-        <Col span={24}>
-          <p style={{ fontSize: "12px", color: "#333" }}>
-            <FileTextOutlined style={{ marginRight: "5px" }} />
-            {project?.description}
-          </p>
+      <Progress percent={Math.min(progressPercentage, 100)} status="active" />
+
+      <Row gutter={16} style={{ marginTop: 16 }}>
+        <Col span={8}>
+          <Title level={4}>${project?.currentAmount?.toLocaleString()}</Title>
+          <Text type="secondary">
+            pledged of ${project?.goalAmount?.toLocaleString()}
+          </Text>
+        </Col>
+        <Col span={8}>
+          <Title level={4}>{project?.backers?.toLocaleString()}</Title>
+          <Text type="secondary">backers</Text>
+        </Col>
+        <Col span={8}>
+          <Title level={4}>{daysLeft}</Title>
+          <Text type="secondary">days to go</Text>
         </Col>
       </Row>
 
-      <Row>
-        <Col span={24}>
-          <div style={{ marginTop: "10px" }}>
-            {project?.tags?.map((tag, index) => (
-              <Tag
-                key={index}
-                color="blue"
-                style={{
-                  margin: "2px",
-                  background: "#CBD4F6",
-                  color: "#333",
-                  borderRadius: "8px",
-                }}
-              >
-                {tag}
-              </Tag>
-            ))}
-          </div>
-        </Col>
+      <Row style={{ marginTop: 16 }}>
+        {project?.tags?.map((tag) => (
+          <Tag key={tag} color="blue" style={{ margin: 4 }}>
+            {tag}
+          </Tag>
+        ))}
       </Row>
 
-      <Row justify="end" style={{ marginTop: "10px" }}>
-        <Link to={`/project/${project?.id}`}>
-          <Button type="primary">Detail</Button>
-        </Link>
-      </Row>
+      <Button type="primary" style={{ marginTop: 16 }}>
+        <Link to={`/project/${project?.id}`}>View Project</Link>
+      </Button>
     </Card>
   );
 };
-
 export default ProjectCard;

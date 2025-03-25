@@ -12,10 +12,10 @@ const apiClient1 = axios.create({
     "Content-Type": "application/json",
   },
 });
-export const fetchProjects = () => apiClient.get("/projects");
-export const fetchProjectDetails = (id) => apiClient.get(`/projects/${id}`);
-export const fetchGames = () => apiClient1.get("/game");
-export const fetchGameDetails = (id) => apiClient1.get(`/game/${id}`);
+export const fetchProjects = () => apiClient1.get("/game");
+export const fetchProjectDetails = (id) => apiClient1.get(`/game/${id}`);
+export const fetchGames = () => apiClient.get("/projects");
+export const fetchGameDetails = (id) => apiClient.get(`/projects/${id}`);
 export const createProject = (data) => apiClient.post("/project", data);
 // Add a new board to a project
 export const addBoardToProject = (projectId, boardData) =>

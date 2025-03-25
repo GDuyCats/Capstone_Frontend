@@ -8,8 +8,19 @@ import {
   Form,
   Input,
   Table,
+  Tabs,
+  Tag,
+  Typography,
 } from "antd";
-import { UserOutlined, EditOutlined } from "@ant-design/icons";
+import {
+  UserOutlined,
+  EditOutlined,
+  TrophyOutlined,
+  GiftOutlined,
+} from "@ant-design/icons";
+
+const { TabPane } = Tabs;
+const { Title } = Typography;
 
 const ProfilePage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -23,10 +34,28 @@ const ProfilePage = () => {
     createdDatetime: "2024-02-07",
   });
 
-  // Sample posts
-  const posts = [
-    { key: 1, title: "First Post", date: "2024-01-10" },
-    { key: 2, title: "Second Post", date: "2024-01-20" },
+  // Sample rewards data
+  const rewards = [
+    {
+      key: 1,
+      projectName: "Cozy Game Studio",
+      projectId: "p1",
+      rewardTitle: "Early Bird Package",
+      rewardDescription: "Digital copy of the game + exclusive wallpaper",
+      amount: 25,
+      dateReceived: "2024-01-15",
+      status: "Delivered", // or "Pending"
+    },
+    {
+      key: 2,
+      projectName: "Adventure Quest RPG",
+      projectId: "p2",
+      rewardTitle: "Collector's Edition",
+      rewardDescription: "Physical copy + Digital bonuses + Art book",
+      amount: 75,
+      dateReceived: "2024-02-01",
+      status: "Pending",
+    },
   ];
 
   // Handle edit modal
@@ -42,35 +71,119 @@ const ProfilePage = () => {
     });
   };
 
+  // Columns for rewards table
+  const rewardsColumns = [
+    {
+      title: "Project",
+      dataIndex: "projectName",
+      key: "projectName",
+      render: (text, record) => (
+        <a href={`/project/${record.projectId}`}>{text}</a>
+      ),
+    },
+    {
+      title: "Reward",
+      dataIndex: "rewardTitle",
+      key: "rewardTitle",
+      render: (text, record) => (
+        <div>
+          <div style={{ fontWeight: "bold" }}>{text}</div>
+          <div style={{ fontSize: "12px", color: "#666" }}>
+            {record.rewardDescription}
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: "Amount",
+      dataIndex: "amount",
+      key: "amount",
+      render: (amount) => `$${amount}`,
+    },
+    {
+      title: "Date",
+      dataIndex: "dateReceived",
+      key: "dateReceived",
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      render: (status) => (
+        <Tag color={status === "Delivered" ? "green" : "orange"}>{status}</Tag>
+      ),
+    },
+  ];
+
   return (
-    <Card
-      style={{ maxWidth: 800, margin: "20px auto", padding: 20 }}
-      actions={[
-        <Button key="edit" icon={<EditOutlined />} onClick={showModal}>
-          Edit Profile
-        </Button>,
-      ]}
-    >
-      <Avatar size={100} icon={<UserOutlined />} style={{ marginBottom: 20 }} />
+    <Card style={{ maxWidth: 1000, margin: "20px auto", padding: 20 }}>
+      <div style={{ textAlign: "center", marginBottom: 24 }}>
+        <Avatar
+          size={100}
+          icon={<UserOutlined />}
+          style={{ marginBottom: 16 }}
+        />
+        <Title level={4}>My Profile</Title>
+      </div>
 
-      <Descriptions title="User Profile" bordered column={1}>
-        <Descriptions.Item label="Email">{user.email}</Descriptions.Item>
-        <Descriptions.Item label="Phone">{user.phone}</Descriptions.Item>
-        <Descriptions.Item label="Created Date">
-          {user.createdDatetime}
-        </Descriptions.Item>
-      </Descriptions>
+      <Tabs defaultActiveKey="1">
+        <TabPane
+          actions
+          tab={
+            <span>
+              <UserOutlined />
+              Profile Info
+            </span>
+          }
+          key="1"
+        >
+          <Descriptions bordered column={1}>
+            <Descriptions.Item label="Email">{user.email}</Descriptions.Item>
+            <Descriptions.Item label="Phone">{user.phone}</Descriptions.Item>
+            <Descriptions.Item label="Created Date">
+              {user.createdDatetime}
+            </Descriptions.Item>
+          </Descriptions>
+          <Button
+            style={{ marginTop: "20px" }}
+            key="edit"
+            icon={<EditOutlined />}
+            onClick={showModal}
+          >
+            Edit Profile
+          </Button>
+        </TabPane>
 
-      {/* <h3 style={{ marginTop: 20 }}>Posts</h3>
-      <Table
-        dataSource={posts}
-        columns={[
-          { title: "Title", dataIndex: "title", key: "title" },
-          { title: "Date", dataIndex: "date", key: "date" },
-        ]}
-        pagination={false}
-        size="small"
-      /> */}
+        <TabPane
+          tab={
+            <span>
+              <TrophyOutlined />
+              My Rewards
+            </span>
+          }
+          key="2"
+        >
+          <div style={{ marginBottom: 16 }}>
+            <Title level={5}>
+              <GiftOutlined /> Rewards from Backed Projects
+            </Title>
+          </div>
+          <Table
+            dataSource={rewards}
+            columns={rewardsColumns}
+            pagination={false}
+            expandable={{
+              expandedRowRender: (record) => (
+                <p
+                  style={{ margin: 0, padding: 16, backgroundColor: "#f5f5f5" }}
+                >
+                  {record.rewardDescription}
+                </p>
+              ),
+            }}
+          />
+        </TabPane>
+      </Tabs>
 
       {/* Edit Modal */}
       <Modal
