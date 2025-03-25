@@ -12,15 +12,20 @@ import LoginLayout from "./components/Layout/loginlayout/LoginLayout";
 import RegisterLayout from "./components/Layout/registerlayout/RegisterLayout";
 import GamePage from "./pages/GamePage";
 import GameDetailPage from "./pages/GameDetailPage";
+import AdminProjectListPage from "./pages/AdminProjectListPage";
+import AdminProjectDetailPage from "./pages/AdminProjectDetailPage";
+import CreateProjectForm from "./pages/CreateProjectForm";
 
 function App() {
   return (
     <Routes>
       <Route path="/" element={<LayoutCom />}>
+        <Route path="/admin/projects" element={<AdminProjectListPage />} />
+        <Route path="/admin/project/:id" element={<AdminProjectDetailPage />} />
         <Route path="/" element={<HomePage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/project/:id" element={<ProjectDetailPage />} />{" "}
-        <Route path="/create-project" element={<CreateProjectPage />} />{" "}
+        <Route path="/create-project" element={<CreateProjectForm />} />{" "}
         <Route path="/task" element={<TaskPage />} />
         <Route path="/profile/:id" element={<UserProfilePage />} />
         <Route path="/games" element={<GamePage />} />
@@ -32,9 +37,6 @@ function App() {
       <Route path="/" element={<RegisterLayout />}>
         <Route path="/register" element={<Register />} />
       </Route>
-
-
-
     </Routes>
   );
 }

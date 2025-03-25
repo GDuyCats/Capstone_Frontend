@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { fetchProjectDetails } from "../api/apiClient";
+import TipTapViewer from "../components/TipTapViewer";
+import ProjectSidebar from "../components/ProjectDetailPage/ProjectSidebar";
+import { Spin } from "antd";
 import {
   Layout,
   Typography,
@@ -8,25 +11,39 @@ import {
   Tabs,
   Button,
   Card,
-  Progress,
-  Statistic,
-  Modal,
-  Radio,
-  Input,
-  Form,
+  Space,
+  Divider,
+  Avatar,
+  Result,
+  Tag,
 } from "antd";
 import { useParams } from "react-router-dom";
+import {
+  ClockCircleOutlined,
+  UserOutlined,
+  HeartOutlined,
+  ShareAltOutlined,
+  BulbOutlined,
+  MessageOutlined,
+} from "@ant-design/icons";
+import ProjectComments from "../components/ProjectDetailPage/ProjectComments";
+import ProjectUpdates from "../components/ProjectDetailPage/ProjectUpdates";
 
 const { Content } = Layout;
 const { Title, Text, Paragraph } = Typography;
-const { TabPane } = Tabs;
 
 const ProjectDetailPage = () => {
-  const [pledgeModalVisible, setPledgeModalVisible] = useState(false);
-  const [selectedReward, setSelectedReward] = useState(null);
   const { id } = useParams();
   const [loading, setLoading] = useState(true);
   const [project, setProject] = useState(null);
+  const [activeTab, setActiveTab] = useState("1");
+
+  const handleAddUpdate = (updatedUpdates) => {
+    setProject((prevProject) => ({
+      ...prevProject,
+      updates: updatedUpdates,
+    }));
+  };
 
   useEffect(() => {
     fetchProjectDetails(id)
@@ -40,127 +57,211 @@ const ProjectDetailPage = () => {
       });
   }, [id]);
 
-  if (loading) return <p>Loading...</p>;
-  if (!project) return <p>Project not found</p>;
+  // Only calculate daysLeft if project exists
+  const daysLeft = project
+    ? Math.ceil(
+        (new Date(project?.endDate) - new Date()) / (1000 * 60 * 60 * 24)
+      )
+    : 0;
 
-  const daysLeft = Math.ceil(
-    (new Date(project.endDate) - new Date()) / (1000 * 60 * 60 * 24)
-  );
-  const progressPercentage = (project.currentAmount / project.goalAmount) * 100;
+  const items = [
+    {
+      key: "1",
+      label: (
+        <span>
+          <BulbOutlined /> About
+        </span>
+      ),
+      children: (
+        <div className="project-about">
+          <TipTapViewer content={project?.description} />
 
-  const handlePledge = (values) => {
-    console.log("Pledge values:", values);
-    setPledgeModalVisible(false);
-  };
+          {project?.features && (
+            <>
+              <Title level={4}>Key Features</Title>
+              <ul style={{ fontSize: 16 }}>
+                {project.features.map((feature, index) => (
+                  <li key={index}>{feature}</li>
+                ))}
+              </ul>
+            </>
+          )}
+
+          {project?.creator && (
+            <>
+              <Divider />
+              <Title level={4}>About the Creator</Title>
+              <Row gutter={16} align="middle">
+                <Col>
+                  <Avatar
+                    size={64}
+                    src={project.creator.avatar}
+                    icon={<UserOutlined />}
+                  />
+                </Col>
+                <Col flex="auto">
+                  <Title level={5} style={{ marginBottom: 4 }}>
+                    {project.creator.name}
+                  </Title>
+                  <Paragraph>{project.creator.bio}</Paragraph>
+                </Col>
+              </Row>
+            </>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: "2",
+      label: (
+        <span>
+          <MessageOutlined /> Updates
+        </span>
+      ),
+      children: (
+        <ProjectUpdates
+          updates={project?.updates || []}
+          onAddUpdate={handleAddUpdate}
+        />
+      ),
+    },
+    {
+      key: "3",
+      label: (
+        <span>
+          <MessageOutlined /> Comments
+        </span>
+      ),
+      children: (
+        <ProjectComments
+          comments={[
+            {
+              id: 1,
+              avatar: "https://randomuser.me/api/portraits/men/1.jpg",
+              name: "John Doe",
+              content: "This project looks amazing!",
+              date: "2025-03-10T10:00:00",
+              edited: false,
+            },
+            {
+              id: 2,
+              avatar: "https://randomuser.me/api/portraits/women/2.jpg",
+              name: "Jane Smith",
+              content: "Can't wait to support this!",
+              date: "2025-03-11T15:30:00",
+              edited: true,
+            },
+          ]}
+          onAddComment={(content) => console.log("Add Comment:", content)}
+          onEditComment={(id, newContent) =>
+            console.log("Edit Comment:", id, newContent)
+          }
+        />
+      ),
+    },
+  ];
 
   return (
-    <Content style={{ padding: "24px" }}>
-      <Row gutter={[24, 24]}>
-        <Col span={16}>
-          <img
-            src={project.thumbnail}
-            alt={project.title}
-            style={{ width: "100%", borderRadius: 8 }}
+    <Content style={{ padding: "24px", maxWidth: 1200, margin: "0 auto" }}>
+      {loading ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            padding: "50px 0",
+          }}
+        >
+          <Spin size="large" />
+        </div>
+      ) : !project ? (
+        <Card>
+          <Result
+            status="404"
+            title="Project Not Found"
+            subTitle="Sorry, the project you're looking for doesn't exist."
+            extra={
+              <Button type="primary" href="/">
+                Browse Projects
+              </Button>
+            }
           />
-
-          <Tabs defaultActiveKey="1" style={{ marginTop: 24 }}>
-            <TabPane tab="About" key="1">
-              <Paragraph>{project.description}</Paragraph>
-            </TabPane>
-            <TabPane tab="Updates" key="2">
-              Project updates will be shown here
-            </TabPane>
-            <TabPane tab="Comments" key="3">
-              Community discussion
-            </TabPane>
-          </Tabs>
-        </Col>
-
-        <Col span={8}>
-          <Card>
-            <Progress
-              percent={Math.min(progressPercentage, 100)}
-              status="active"
-            />
-            <Row gutter={[16, 16]}>
-              <Col span={24}>
-                <Statistic
-                  title="Pledged"
-                  value={project.currentAmount}
-                  prefix="$"
+        </Card>
+      ) : (
+        <Row gutter={[24, 24]} align="top">
+          <Col xs={24} lg={16}>
+            <Card
+              cover={
+                <img
+                  src={project.thumbnail}
+                  alt={project.title}
+                  style={{ width: "100%", height: 400, objectFit: "cover" }}
                 />
-                <Text type="secondary">of ${project.goalAmount} goal</Text>
-              </Col>
-              <Col span={12}>
-                <Statistic title="Backers" value={project.backers} />
-              </Col>
-              <Col span={12}>
-                <Statistic title="Days to go" value={daysLeft} />
-              </Col>
-            </Row>
-
-            <Button
-              type="primary"
-              size="large"
-              block
-              style={{ marginTop: 24 }}
-              onClick={() => setPledgeModalVisible(true)}
-            >
-              Back this project
-            </Button>
-          </Card>
-
-          <Title level={4} style={{ marginTop: 24 }}>
-            Rewards
-          </Title>
-          {project.rewards.map((reward) => (
-            <Card key={reward.id} style={{ marginTop: 16 }}>
-              <Title level={5}>${reward.amount} or more</Title>
-              <Title level={4}>{reward.title}</Title>
-              <Paragraph>{reward.description}</Paragraph>
-              <Text type="secondary">
-                {reward.remainingQuantity} of {reward.limitedQuantity} remaining
-              </Text>
-            </Card>
-          ))}
-        </Col>
-      </Row>
-
-      <Modal
-        title="Back this project"
-        visible={pledgeModalVisible}
-        onCancel={() => setPledgeModalVisible(false)}
-        footer={null}
-        width={600}
-      >
-        <Form onFinish={handlePledge}>
-          <Form.Item name="rewardId" label="Select your reward">
-            <Radio.Group onChange={(e) => setSelectedReward(e.target.value)}>
-              {project.rewards.map((reward) => (
-                <Radio.Button key={reward.id} value={reward.id}>
-                  ${reward.amount} - {reward.title}
-                </Radio.Button>
-              ))}
-            </Radio.Group>
-          </Form.Item>
-
-          <Form.Item name="amount" label="Pledge amount">
-            <Input
-              prefix="$"
-              type="number"
-              min={
-                selectedReward
-                  ? project.rewards.find((r) => r.id === selectedReward).amount
-                  : 1
               }
-            />
-          </Form.Item>
+              style={{ marginBottom: 24, border: "black solid 0.5px" }}
+            >
+              <Space
+                direction="vertical"
+                size="large"
+                style={{ width: "100%" }}
+              >
+                <div>
+                  <Space size={8}>
+                    {project.categories?.map((category) => (
+                      <Tag key={category} color="blue">
+                        {category}
+                      </Tag>
+                    ))}
+                  </Space>
+                  <Title level={2} style={{ marginTop: 8, marginBottom: 4 }}>
+                    {project.title}
+                  </Title>
+                  <Paragraph style={{ fontSize: 16 }}>
+                    {project.shortDescription}
+                  </Paragraph>
+                </div>
 
-          <Button type="primary" htmlType="submit" block>
-            Continue to payment
-          </Button>
-        </Form>
-      </Modal>
+                <Space split={<Divider type="vertical" />}>
+                  {project.creator && (
+                    <Space>
+                      <Avatar
+                        size="small"
+                        src={project.creator.avatar}
+                        icon={<UserOutlined />}
+                      />
+                      <Text strong>{project.creator.name}</Text>
+                    </Space>
+                  )}
+                  <Text>
+                    <ClockCircleOutlined />{" "}
+                    {daysLeft > 0 ? `${daysLeft} days to go` : "Funding ended"}
+                  </Text>
+                  <Text>
+                    <UserOutlined /> {project.backers} backers
+                  </Text>
+                </Space>
+
+                <Space style={{ width: "100%", justifyContent: "flex-end" }}>
+                  <Button icon={<HeartOutlined />}>Favorite</Button>
+                  <Button icon={<ShareAltOutlined />}>Share</Button>
+                </Space>
+              </Space>
+            </Card>
+
+            <Card style={{ border: "black solid 0.5px" }}>
+              <Tabs
+                activeKey={activeTab}
+                onChange={setActiveTab}
+                items={items}
+                size="large"
+              />
+            </Card>
+          </Col>
+
+          <Col xs={24} lg={8}>
+            <ProjectSidebar project={project} />
+          </Col>
+        </Row>
+      )}
     </Content>
   );
 };
