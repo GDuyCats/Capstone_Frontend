@@ -12,6 +12,7 @@ import {
   Radio,
   Input,
   Form,
+  Spin,
 } from "antd";
 import { UserOutlined, DollarOutlined } from "@ant-design/icons";
 
@@ -21,10 +22,32 @@ const ProjectSidebar = ({ project }) => {
   const [pledgeModalVisible, setPledgeModalVisible] = useState(false);
   const [selectedReward, setSelectedReward] = useState(null);
 
+  // Kiểm tra nếu project chưa được load
+  if (!project) {
+    return (
+      <div
+        style={{ display: "flex", justifyContent: "center", padding: "20px" }}
+      >
+        <Spin size="large" />
+      </div>
+    );
+  }
+
+  // Thiết lập giá trị mặc định
+  const safeProject = {
+    currentAmount: 0,
+    goalAmount: 0,
+    backers: 0,
+    endDate: new Date(),
+    rewards: [],
+    ...project,
+  };
+
   const daysLeft = Math.ceil(
-    (new Date(project.endDate) - new Date()) / (1000 * 60 * 60 * 24)
+    (new Date(safeProject.endDate) - new Date()) / (1000 * 60 * 60 * 24)
   );
-  const progressPercentage = (project.currentAmount / project.goalAmount) * 100;
+  const progressPercentage =
+    (safeProject.currentAmount / safeProject.goalAmount) * 100;
   const fundingStatus =
     progressPercentage >= 100
       ? "success"
@@ -60,10 +83,10 @@ const ProjectSidebar = ({ project }) => {
             />
 
             <Title level={2} style={{ margin: "16px 0 0 0" }}>
-              ${project.currentAmount.toLocaleString()}
+              ${safeProject.currentAmount?.toLocaleString() ?? "0"}
             </Title>
             <Text type="secondary">
-              pledged of ${project.goalAmount.toLocaleString()} goal
+              pledged of ${safeProject.goalAmount?.toLocaleString() ?? "0"} goal
             </Text>
           </div>
 
@@ -80,7 +103,7 @@ const ProjectSidebar = ({ project }) => {
                     lineHeight: 1.2,
                   }}
                 >
-                  {project.backers.toLocaleString()}
+                  {safeProject.backers?.toLocaleString() ?? "0"}
                 </div>
               </div>
             </Col>
@@ -123,107 +146,127 @@ const ProjectSidebar = ({ project }) => {
         </Space>
       </Card>
 
-      {/* Rewards card */}
-      <Card
-        title={
-          <Title level={4} style={{ margin: 0 }}>
-            Rewards
-          </Title>
-        }
-        style={{
-          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
-          borderRadius: 8,
-          backgroundColor: "#f7f2cd",
-          border: "black solid 0.3px",
-        }}
-        headStyle={{ borderBottom: "1px solid #f0f0f0" }}
-      >
-        <Space direction="vertical" size="middle" style={{ width: "100%" }}>
-          {project.rewards.map((reward) => (
-            <Card
-              key={reward.id}
-              bordered
-              hoverable
-              style={{
-                borderRadius: 8,
-                border: "black solid 0.3px",
-                backgroundColor:
-                  reward.remainingQuantity === 0 ? "#f5f5f5" : "white",
-              }}
-            >
-              <Space
-                direction="vertical"
-                size="small"
-                style={{ width: "100%" }}
-              >
-                <Tag
-                  color="success"
+      {/* Rewards card - Chỉ hiển thị nếu có rewards */}
+      {safeProject.rewards?.length > 0 && (
+        <Card
+          title={
+            <Title level={4} style={{ margin: 0 }}>
+              Rewards
+            </Title>
+          }
+          style={{
+            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
+            borderRadius: 8,
+            backgroundColor: "#f7f2cd",
+            border: "black solid 0.3px",
+          }}
+          headStyle={{ borderBottom: "1px solid #f0f0f0" }}
+        >
+          <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+            {safeProject.rewards.map((reward) => {
+              const safeReward = {
+                id: "",
+                amount: 0,
+                title: "",
+                description: "",
+                remainingQuantity: 0,
+                limitedQuantity: false,
+                deliveryDate: null,
+                featured: false,
+                ...reward,
+              };
+
+              return (
+                <Card
+                  key={safeReward.id}
+                  bordered
+                  hoverable
                   style={{
-                    borderRadius: 4,
-                    fontSize: 14,
-                    padding: "2px 8px",
+                    borderRadius: 8,
+                    border: "black solid 0.3px",
+                    backgroundColor:
+                      safeReward.remainingQuantity === 0 ? "#f5f5f5" : "white",
                   }}
                 >
-                  ${reward.amount} or more
-                </Tag>
-
-                {reward.featured && <Tag color="blue">Popular</Tag>}
-
-                <Title level={4} style={{ marginTop: 8, marginBottom: 4 }}>
-                  {reward.title}
-                </Title>
-
-                <Paragraph>{reward.description}</Paragraph>
-
-                {reward.deliveryDate && (
-                  <Text type="secondary">
-                    Estimated delivery:{" "}
-                    {new Date(reward.deliveryDate).toLocaleDateString()}
-                  </Text>
-                )}
-
-                <div style={{ marginTop: 8 }}>
-                  {reward.limitedQuantity ? (
-                    <div
+                  <Space
+                    direction="vertical"
+                    size="small"
+                    style={{ width: "100%" }}
+                  >
+                    <Tag
+                      color="success"
                       style={{
-                        border: "1px solid #e8e8e8",
                         borderRadius: 4,
-                        padding: "4px 10px",
-                        display: "inline-block",
                         fontSize: 14,
-                        color:
-                          reward.remainingQuantity < 10 ? "#fa8c16" : "#1890ff",
+                        padding: "2px 8px",
                       }}
                     >
-                      {reward.remainingQuantity} of {reward.limitedQuantity}{" "}
-                      remaining
-                    </div>
-                  ) : (
-                    <Tag color="blue">Unlimited</Tag>
-                  )}
-                </div>
+                      ${safeReward.amount} or more
+                    </Tag>
 
-                <Button
-                  type="primary"
-                  block
-                  disabled={reward.remainingQuantity === 0 || daysLeft <= 0}
-                  onClick={() => {
-                    setSelectedReward(reward.id);
-                    setPledgeModalVisible(true);
-                  }}
-                  style={{
-                    marginTop: 12,
-                    borderRadius: 4,
-                    height: 40,
-                  }}
-                >
-                  Select this reward
-                </Button>
-              </Space>
-            </Card>
-          ))}
-        </Space>
-      </Card>
+                    {safeReward.featured && <Tag color="blue">Popular</Tag>}
+
+                    <Title level={4} style={{ marginTop: 8, marginBottom: 4 }}>
+                      {safeReward.title}
+                    </Title>
+
+                    <Paragraph>{safeReward.description}</Paragraph>
+
+                    {safeReward.deliveryDate && (
+                      <Text type="secondary">
+                        Estimated delivery:{" "}
+                        {new Date(safeReward.deliveryDate).toLocaleDateString()}
+                      </Text>
+                    )}
+
+                    <div style={{ marginTop: 8 }}>
+                      {safeReward.limitedQuantity ? (
+                        <div
+                          style={{
+                            border: "1px solid #e8e8e8",
+                            borderRadius: 4,
+                            padding: "4px 10px",
+                            display: "inline-block",
+                            fontSize: 14,
+                            color:
+                              safeReward.remainingQuantity < 10
+                                ? "#fa8c16"
+                                : "#1890ff",
+                          }}
+                        >
+                          {safeReward.remainingQuantity} of{" "}
+                          {safeReward.limitedQuantity} remaining
+                        </div>
+                      ) : (
+                        <Tag color="blue">Unlimited</Tag>
+                      )}
+                    </div>
+
+                    <Button
+                      type="primary"
+                      block
+                      disabled={
+                        safeReward.remainingQuantity === 0 || daysLeft <= 0
+                      }
+                      onClick={() => {
+                        setSelectedReward(safeReward.id);
+                        setPledgeModalVisible(true);
+                      }}
+                      style={{
+                        marginTop: 12,
+                        borderRadius: 4,
+                        height: 40,
+                      }}
+                    >
+                      Select this reward
+                    </Button>
+                  </Space>
+                </Card>
+              );
+            })}
+          </Space>
+        </Card>
+      )}
 
       {/* Pledge Modal */}
       <Modal
@@ -249,34 +292,45 @@ const ProjectSidebar = ({ project }) => {
               style={{ width: "100%" }}
             >
               <Space direction="vertical" style={{ width: "100%" }}>
-                {project.rewards.map((reward) => (
-                  <Radio.Button
-                    key={reward.id}
-                    value={reward.id}
-                    style={{
-                      width: "100%",
-                      height: "auto",
-                      padding: "12px",
-                      display: "block",
-                      whiteSpace: "normal",
-                      borderRadius: 4,
-                      marginBottom: 8,
-                    }}
-                    disabled={reward.remainingQuantity === 0}
-                  >
-                    <div>
-                      <Title level={5} style={{ marginBottom: 4 }}>
-                        ${reward.amount} - {reward.title}
-                        {reward.remainingQuantity === 0 && (
-                          <Tag color="red" style={{ marginLeft: 8 }}>
-                            Sold out
-                          </Tag>
-                        )}
-                      </Title>
-                      <Text type="secondary">{reward.description}</Text>
-                    </div>
-                  </Radio.Button>
-                ))}
+                {safeProject.rewards?.map((reward) => {
+                  const safeReward = {
+                    id: "",
+                    amount: 0,
+                    title: "",
+                    description: "",
+                    remainingQuantity: 0,
+                    ...reward,
+                  };
+
+                  return (
+                    <Radio.Button
+                      key={safeReward.id}
+                      value={safeReward.id}
+                      style={{
+                        width: "100%",
+                        height: "auto",
+                        padding: "12px",
+                        display: "block",
+                        whiteSpace: "normal",
+                        borderRadius: 4,
+                        marginBottom: 8,
+                      }}
+                      disabled={safeReward.remainingQuantity === 0}
+                    >
+                      <div>
+                        <Title level={5} style={{ marginBottom: 4 }}>
+                          ${safeReward.amount} - {safeReward.title}
+                          {safeReward.remainingQuantity === 0 && (
+                            <Tag color="red" style={{ marginLeft: 8 }}>
+                              Sold out
+                            </Tag>
+                          )}
+                        </Title>
+                        <Text type="secondary">{safeReward.description}</Text>
+                      </div>
+                    </Radio.Button>
+                  );
+                })}
               </Space>
             </Radio.Group>
           </Form.Item>
@@ -289,9 +343,9 @@ const ProjectSidebar = ({ project }) => {
               {
                 validator: (_, value) => {
                   if (!selectedReward) return Promise.resolve();
-                  const minAmount = project.rewards.find(
-                    (r) => r.id === selectedReward
-                  ).amount;
+                  const minAmount =
+                    safeProject.rewards?.find((r) => r.id === selectedReward)
+                      ?.amount || 0;
                   return value >= minAmount
                     ? Promise.resolve()
                     : Promise.reject(
@@ -307,14 +361,15 @@ const ProjectSidebar = ({ project }) => {
               size="large"
               min={
                 selectedReward
-                  ? project.rewards.find((r) => r.id === selectedReward).amount
+                  ? safeProject.rewards?.find((r) => r.id === selectedReward)
+                      ?.amount || 1
                   : 1
               }
               placeholder={
                 selectedReward
                   ? `Minimum: $${
-                      project.rewards.find((r) => r.id === selectedReward)
-                        .amount
+                      safeProject.rewards?.find((r) => r.id === selectedReward)
+                        ?.amount || 0
                     }`
                   : "Enter amount"
               }

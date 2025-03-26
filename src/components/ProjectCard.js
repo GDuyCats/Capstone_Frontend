@@ -12,7 +12,8 @@ const ProjectCard = ({ project }) => {
     (project["total-amount"] / project["minimum-amount"]) * 100;
 
   const thumbnail =
-    project.thumbnail || "https://ralfvanveen.com/en/glossary/placeholder/";
+    project.thumbnail ||
+    "https://paper.vn/wp-content/uploads/2023/11/placeholder-1-1-1.png";
 
   const truncateDescription = (text, charLimit) => {
     if (!text) return "";

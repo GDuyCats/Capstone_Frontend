@@ -1,8 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { fetchProjectDetails } from "../api/apiClient";
-import TipTapViewer from "../components/TipTapViewer";
-import ProjectSidebar from "../components/ProjectDetailPage/ProjectSidebar";
-import { Spin } from "antd";
+import { useParams } from "react-router-dom";
 import {
   Layout,
   Typography,
@@ -16,8 +13,8 @@ import {
   Avatar,
   Result,
   Tag,
+  Spin,
 } from "antd";
-import { useParams } from "react-router-dom";
 import {
   ClockCircleOutlined,
   UserOutlined,
@@ -26,8 +23,11 @@ import {
   BulbOutlined,
   MessageOutlined,
 } from "@ant-design/icons";
+import TipTapViewer from "../components/TipTapViewer";
+import ProjectSidebar from "../components/ProjectDetailPage/ProjectSidebar";
 import ProjectComments from "../components/ProjectDetailPage/ProjectComments";
 import ProjectUpdates from "../components/ProjectDetailPage/ProjectUpdates";
+import { fetchProject } from "../api/apiClient"; // Sửa lại import này
 
 const { Content } = Layout;
 const { Title, Text, Paragraph } = Typography;
@@ -46,21 +46,28 @@ const ProjectDetailPage = () => {
   };
 
   useEffect(() => {
-    fetchProjectDetails(id)
-      .then((response) => {
-        setProject(response.data);
-        setLoading(false);
-      })
-      .catch((error) => {
+    const fetchProjectData = async () => {
+      try {
+        const response = await fetchProject(id); // Sửa lại cách gọi API ở đây
+        if (response.data.success) {
+          setProject(response.data.data);
+        } else {
+          console.error("Error fetching project:", response.data.message);
+        }
+      } catch (error) {
         console.error("Error fetching project details:", error);
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+
+    fetchProjectData();
   }, [id]);
 
-  // Only calculate daysLeft if project exists
+  // Calculate days left
   const daysLeft = project
     ? Math.ceil(
-        (new Date(project?.endDate) - new Date()) / (1000 * 60 * 60 * 24)
+        (new Date(project["end-datetime"]) - new Date()) / (1000 * 60 * 60 * 24)
       )
     : 0;
 
@@ -74,18 +81,11 @@ const ProjectDetailPage = () => {
       ),
       children: (
         <div className="project-about">
-          <TipTapViewer content={project?.description} />
+          <TipTapViewer content={project?.story} />
 
-          {project?.features && (
-            <>
-              <Title level={4}>Key Features</Title>
-              <ul style={{ fontSize: 16 }}>
-                {project.features.map((feature, index) => (
-                  <li key={index}>{feature}</li>
-                ))}
-              </ul>
-            </>
-          )}
+          <Divider />
+          <Title level={4}>Project Description</Title>
+          <Paragraph style={{ fontSize: 16 }}>{project?.description}</Paragraph>
 
           {project?.creator && (
             <>
@@ -93,17 +93,12 @@ const ProjectDetailPage = () => {
               <Title level={4}>About the Creator</Title>
               <Row gutter={16} align="middle">
                 <Col>
-                  <Avatar
-                    size={64}
-                    src={project.creator.avatar}
-                    icon={<UserOutlined />}
-                  />
+                  <Avatar size={64} icon={<UserOutlined />} />
                 </Col>
                 <Col flex="auto">
                   <Title level={5} style={{ marginBottom: 4 }}>
-                    {project.creator.name}
+                    {project.creator}
                   </Title>
-                  <Paragraph>{project.creator.bio}</Paragraph>
                 </Col>
               </Row>
             </>
@@ -118,12 +113,7 @@ const ProjectDetailPage = () => {
           <MessageOutlined /> Updates
         </span>
       ),
-      children: (
-        <ProjectUpdates
-          updates={project?.updates || []}
-          onAddUpdate={handleAddUpdate}
-        />
-      ),
+      children: <ProjectUpdates updates={[]} onAddUpdate={handleAddUpdate} />,
     },
     {
       key: "3",
@@ -134,24 +124,7 @@ const ProjectDetailPage = () => {
       ),
       children: (
         <ProjectComments
-          comments={[
-            {
-              id: 1,
-              avatar: "https://randomuser.me/api/portraits/men/1.jpg",
-              name: "John Doe",
-              content: "This project looks amazing!",
-              date: "2025-03-10T10:00:00",
-              edited: false,
-            },
-            {
-              id: 2,
-              avatar: "https://randomuser.me/api/portraits/women/2.jpg",
-              name: "Jane Smith",
-              content: "Can't wait to support this!",
-              date: "2025-03-11T15:30:00",
-              edited: true,
-            },
-          ]}
+          comments={[]}
           onAddComment={(content) => console.log("Add Comment:", content)}
           onEditComment={(id, newContent) =>
             console.log("Edit Comment:", id, newContent)
@@ -205,30 +178,19 @@ const ProjectDetailPage = () => {
                 style={{ width: "100%" }}
               >
                 <div>
-                  <Space size={8}>
-                    {project.categories?.map((category) => (
-                      <Tag key={category} color="blue">
-                        {category}
-                      </Tag>
-                    ))}
-                  </Space>
                   <Title level={2} style={{ marginTop: 8, marginBottom: 4 }}>
                     {project.title}
                   </Title>
                   <Paragraph style={{ fontSize: 16 }}>
-                    {project.shortDescription}
+                    {project.description}
                   </Paragraph>
                 </div>
 
                 <Space split={<Divider type="vertical" />}>
                   {project.creator && (
                     <Space>
-                      <Avatar
-                        size="small"
-                        src={project.creator.avatar}
-                        icon={<UserOutlined />}
-                      />
-                      <Text strong>{project.creator.name}</Text>
+                      <Avatar size="small" icon={<UserOutlined />} />
+                      <Text strong>{project.creator}</Text>
                     </Space>
                   )}
                   <Text>
@@ -236,7 +198,7 @@ const ProjectDetailPage = () => {
                     {daysLeft > 0 ? `${daysLeft} days to go` : "Funding ended"}
                   </Text>
                   <Text>
-                    <UserOutlined /> {project.backers} backers
+                    <UserOutlined /> {project?.backers} backers
                   </Text>
                 </Space>
 
@@ -258,7 +220,15 @@ const ProjectDetailPage = () => {
           </Col>
 
           <Col xs={24} lg={8}>
-            <ProjectSidebar project={project} />
+            <ProjectSidebar
+              project={{
+                ...project,
+                currentAmount: project?.["total-amount"] ?? 0,
+                goalAmount: project?.["minimum-amount"] ?? 0,
+                endDate: project?.["end-datetime"],
+                rewards: [],
+              }}
+            />
           </Col>
         </Row>
       )}

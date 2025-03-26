@@ -1,8 +1,13 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Menu } from "antd";
 import { Link } from "react-router-dom";
+import useAuth from "../Hooks/useAuth";
 
 const Sidebar = () => {
+  const { auth } = useAuth();
+  const [isLoggedIn, setIsLoggedIn] = useState(!!auth);
+  const isAdmin = auth?.role === "Admin";
+  const isCustomer = auth?.role === "Customer";
   return (
     <div
       style={{
@@ -24,21 +29,18 @@ const Sidebar = () => {
         <Menu.Item key="1">
           <Link to="/">Home</Link>
         </Menu.Item>
-        {/* <Menu.Item key="5">
-          <Link to="/games">Game Page</Link>
-        </Menu.Item> */}
-        <Menu.Item key="6">
-          <Link to="/admin/projects">AdminProject</Link>
-        </Menu.Item>
-        {/* <Menu.Item key="2">
-          <Link to="/project/1">My Project</Link>
-        </Menu.Item> */}
-        {/* <Menu.Item key="3">
-          <Link to="/task">Task</Link>
-        </Menu.Item> */}
-        <Menu.Item key="4">
-          <Link to="/create-project">Create Project</Link>
-        </Menu.Item>
+
+        {isAdmin && (
+          <Menu.Item key="6">
+            <Link to="/admin/projects">AdminProject</Link>
+          </Menu.Item>
+        )}
+
+        {isCustomer && (
+          <Menu.Item key="4">
+            <Link to="/create-project">Create Project</Link>
+          </Menu.Item>
+        )}
       </Menu>
     </div>
   );

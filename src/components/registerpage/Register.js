@@ -1,80 +1,154 @@
-import React, { useState } from 'react';
-import Footer from '../Layout/registerlayout/footer/Footer';
-import ReCAPTCHA from 'react-google-recaptcha';
+import React, { useState } from "react";
+import Footer from "../Layout/registerlayout/footer/Footer";
+import { registerUser } from "../../api/apiClient";
 
 function Register() {
-  const [captchaValue, setCaptchaValue] = useState(null);
-  const sitekey = process.env.REACT_APP_RECAPTCHA_SITE_KEY || "your_default_site_key_here";
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    confirmPassword: "",
+    fullname: "",
+  });
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleCaptchaChange = (value) => {
-    setCaptchaValue(value);
-    console.log("CAPTCHA Value:", value);
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setMessage("");
+    setError("");
+    setIsLoading(true);
+
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match.");
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const response = await registerUser({
+        email: formData.email,
+        password: formData.password,
+        "confirm-password": formData.confirmPassword,
+        fullname: formData.fullname,
+      });
+
+      if (response.status === 200 || response.status === 201) {
+        setMessage("A confirmation email has been sent to your email address.");
+      } else {
+        setError("Failed to register. Please try again.");
+      }
+    } catch (err) {
+      setError(
+        "Error: " + (err.response?.data?.message || "Something went wrong.")
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-steam items-center ">
-      {/* Nội dung chính */}
-      <div className="h-[600px] max-w-7xl flex flex-col items-start mr-0 lg:mr-[500px] pl-3 lg:pl-0">
-        <div className='my-10'>
-          <h1 className='text-5xl text-slate-200'>Tạo tài khoản của bạn</h1>
-        </div>
-        <div className='my-10 space-y-5'>
-          <div class="flex flex-col relative hover:scale-105 
-            transition-transform duration-300">
-            <div class="bg-transparent md:bg-steam mb-5">
-              <div class="relative bg-inherit">
-                <input type="text" id="email" name="email" class="peer bg-transparent
-                   h-10 w-[250px] lg:w-[300px] rounded-lg text-slate-400  placeholder-transparent ring-2 
-                   px-2 ring-gray-500 focus:ring-sky-600 focus:outline-none
-                    focus:border-rose-600" placeholder="" />
-                <label for="email" class="absolute cursor-text left-0 -top-6 md:-top-3 text-sm 
-                    text-blue_steam bg-inherit mx-1 px-1 peer-placeholder-shown:text-base 
-                    peer-placeholder-shown:text-slate-200 
-                    md:peer-placeholder-shown:text-blue_steam 
-                    peer-placeholder-shown:top-2 peer-focus:-top-8 md:peer-focus:-top-3
-                  peer-focus:text-blue_steam peer-focus:text-sm transition-all 
-                  font-medium">Địa chỉ email
-                </label>
-              </div>
-            </div>
-          </div>
-          <div class="flex flex-col space-y-1 relative hover:scale-105 
-            transition-transform duration-300">
-            <div class="bg-transparent md:bg-steam">
-              <div class="relative bg-inherit">
-                <input type="text" id="auth_email" name="auth_email" class="peer bg-transparent
-                   h-10 w-[250px] lg:w-[300px] rounded-lg text-slate-400 placeholder-transparent ring-2 
-                   px-2 ring-gray-500 focus:ring-sky-600 focus:outline-none
-                    focus:border-rose-600" placeholder="" />
-                <label for="auth_email" class="absolute cursor-text left-0 -top-6 md:-top-3 text-sm 
-                    text-blue_steam bg-inherit mx-1 px-1 peer-placeholder-shown:text-base 
-                    peer-placeholder-shown:text-slate-200 
-                    md:peer-placeholder-shown:text-blue_steam 
-                    peer-placeholder-shown:top-2 peer-focus:-top-8 md:peer-focus:-top-3
-                  peer-focus:text-blue_steam peer-focus:text-sm transition-all 
-                  font-medium">Xác nhận địa chỉ email
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* reCAPTCHA */}
-        <div className="flex justify-center">
-          <ReCAPTCHA
-            sitekey={sitekey}
-            onChange={handleCaptchaChange}
-          />
-        </div>
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-gray-900 to-gray-800 items-center">
+      <div className="w-full max-w-md p-8 rounded-lg bg-gray-800 bg-opacity-50 backdrop-blur-sm mt-10 mb-10">
+        <h1 className="text-3xl font-bold text-center mb-8">
+          Create Your Account
+        </h1>
 
-        {/* Nút Tiếp tục */}
-        <button
-          className={`mt-4 bg-blue-500 text-white px-4 py-2 rounded w-[200px] ${!captchaValue ? "opacity-50 cursor-not-allowed" : ""
+        <form className="space-y-6" onSubmit={handleSubmit}>
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">
+              Full Name
+            </label>
+            <input
+              type="text"
+              name="fullname"
+              placeholder="John Doe"
+              className="w-full px-4 py-3 rounded-lg bg-gray-700 border border-gray-600 focus:border-blue-500 focus:outline-none placeholder-gray-400 transition duration-200"
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">
+              Email
+            </label>
+            <input
+              type="email"
+              name="email"
+              placeholder="your@email.com"
+              className="w-full px-4 py-3 rounded-lg bg-gray-700 border border-gray-600 focus:border-blue-500 focus:outline-none placeholder-gray-400 transition duration-200"
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">
+              Password
+            </label>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                placeholder="••••••••"
+                className="w-full px-4 py-3 rounded-lg bg-gray-700 border border-gray-600 focus:border-blue-500 focus:outline-none placeholder-gray-400 transition duration-200 pr-10"
+                onChange={handleChange}
+                required
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">
+              Confirm Password
+            </label>
+            <div className="relative">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                name="confirmPassword"
+                placeholder="••••••••"
+                className="w-full px-4 py-3 rounded-lg bg-gray-700 border border-gray-600 focus:border-blue-500 focus:outline-none placeholder-gray-400 transition duration-200 pr-10"
+                onChange={handleChange}
+                required
+              />
+            </div>
+          </div>
+
+          {message && (
+            <div className="p-3 bg-green-900 bg-opacity-50 text-green-300 rounded-lg text-sm">
+              {message}
+            </div>
+          )}
+          {error && (
+            <div className="p-3 bg-red-900 bg-opacity-50 text-red-300 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            className={`w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-200 flex items-center justify-center ${
+              isLoading ? "opacity-70 cursor-not-allowed" : ""
             }`}
-          disabled={!captchaValue}
-        >
-          Tiếp tục
-        </button>
+            disabled={isLoading}
+          >
+            {isLoading ? "Processing..." : "Continue"}
+          </button>
+        </form>
 
+        <div className="mt-6 text-center text-sm text-gray-400">
+          Already have an account?{" "}
+          <a href="/login" className="text-red-400 hover:text-blue-300">
+            Sign in
+          </a>
+        </div>
       </div>
       <Footer />
     </div>
