@@ -14,6 +14,12 @@ const AdminProjectListPage = () => {
       .catch((error) => console.error("Error fetching projects:", error));
   }, []);
 
+
+
+
+
+
+
   const handleDelete = (id) => {
     deleteProject(id)
       .then(() => {
