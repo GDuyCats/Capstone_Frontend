@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import Footer from '../Layout/registerlayout/footer/Footer';
 import ReCAPTCHA from 'react-google-recaptcha';
@@ -30,6 +31,7 @@ const Register = () => {
     }
 
     try {
+
       const response = await axios.post(
         'https://marvelous-gentleness-production.up.railway.app/api/Authentication/register',
         {
@@ -64,6 +66,7 @@ const Register = () => {
       } else {
         setErrorList(['Đăng ký thất bại.']);
       }
+
     }
   };
 
@@ -111,13 +114,11 @@ const Register = () => {
             </div>
           )}
       </div>
-
       <Footer />
     </div>
   );
 };
 
-// Tái sử dụng component input
 const InputField = ({ id, label, type, value, onChange }) => (
   <div className="flex flex-col relative hover:scale-105 transition-transform duration-300">
     <div className="bg-transparent md:bg-steam mb-5">

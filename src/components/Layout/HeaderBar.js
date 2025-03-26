@@ -1,19 +1,39 @@
 import React from "react";
-import { Layout, Menu, Input, Avatar, Dropdown } from "antd";
+import { Layout, Menu, Input, Avatar, Dropdown, message } from "antd";
 import { UserOutlined, SearchOutlined } from "@ant-design/icons";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import useAuth from "../Hooks/useAuth";
 
 const { Header } = Layout;
 
 const HeaderBar = () => {
+  const navigate = useNavigate();
+  const { auth, setAuth } = useAuth();
+  const isAuthenticated = !!auth;
+
+  const handleLogout = () => {
+    setAuth(null);
+    localStorage.removeItem("auth");
+    message.success("Logged out successfully!");
+    navigate("/");
+  };
+
   const userMenu = (
     <Menu>
-      <Menu.Item key="1">
-        <Link to="/profile">Profile</Link>
-      </Menu.Item>
-      <Menu.Item key="2">
-        <Link to="/logout">Logout</Link>
-      </Menu.Item>
+      {isAuthenticated ? (
+        <>
+          <Menu.Item key="1">
+            <Link to="/profile">Profile</Link>
+          </Menu.Item>
+          <Menu.Item key="2" onClick={handleLogout}>
+            Logout
+          </Menu.Item>
+        </>
+      ) : (
+        <Menu.Item key="3">
+          <Link to="/login">Login</Link>
+        </Menu.Item>
+      )}
     </Menu>
   );
 

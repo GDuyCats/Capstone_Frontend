@@ -35,13 +35,15 @@ const GameCard = ({ game }) => {
         <Col span={18}>
           <h3 style={{ margin: 0 }}>{game?.title}</h3>
           <p style={{ margin: 0, fontSize: "12px", color: "#666" }}>
-            Created by: <strong>{game?.creator}</strong>
+            Developer:{" "}
+            <strong>
+              {/* {game?.creator} */}
+              Nguyen Van A
+            </strong>
           </p>
           <p style={{ margin: 0, fontSize: "12px", color: "#666" }}>
-            Members:{" "}
-            <strong>
-              {memberCount}/{maxMembers}
-            </strong>{" "}
+            Publish Date:{" "}
+            <strong>{/* {memberCount}/{maxMembers} */}20/2/2024</strong>{" "}
           </p>
         </Col>
       </Row>
