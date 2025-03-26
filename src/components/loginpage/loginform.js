@@ -1,5 +1,5 @@
 import React from 'react';
-import { Form, Input, Button, Checkbox, message } from 'antd';
+
 import Otherlogin from './Otherlogin';
 function Loginform() {
   const onFinish = (values) => {
