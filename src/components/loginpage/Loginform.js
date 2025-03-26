@@ -32,7 +32,7 @@ const Loginform = () => {
       const user = response.data?.user || { username };
 
       if (token) {
-        setAuth({ token, user }); // ✅ Lưu vào context
+        setAuth({ token, user });
         setSuccessMsg(response.data?.message || 'Đăng nhập thành công!');
         setErrorMsg('');
 
