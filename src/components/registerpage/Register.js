@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+
+import React, { useState, useRef } from 'react';
 import Footer from '../Layout/registerlayout/footer/Footer';
 import ReCAPTCHA from 'react-google-recaptcha';
 
@@ -9,6 +11,56 @@ function Register() {
   const handleCaptchaChange = (value) => {
     setCaptchaValue(value);
     console.log("CAPTCHA Value:", value);
+  };
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setSuccessMsg('');
+    setErrorList([]);
+
+    if (password !== confirmPassword) {
+      setErrorList(["Mật khẩu và xác nhận mật khẩu không khớp."]);
+      return;
+    }
+
+    try {
+
+      const response = await axios.post(
+        'https://marvelous-gentleness-production.up.railway.app/api/Authentication/register',
+        {
+          email,
+          password,
+          "confirm-password": confirmPassword,
+          fullname
+        }
+      );
+
+      setErrorList([]);
+      setSuccessMsg(response.data?.message || 'Đăng ký thành công!');
+      setEmail('');
+      setPassword('');
+      setConfirmPassword('');
+      setFullname('');
+      setCaptchaValue(null);
+      if (recaptchaRef.current) recaptchaRef.current.reset();
+
+    } catch (err) {
+      const data = err.response?.data;
+      const errors = data?.errors;
+
+      if (errors) {
+        const newErrorList = [];
+        for (const key in errors) {
+          newErrorList.push(...errors[key]);
+        }
+        setErrorList(newErrorList);
+      } else if (data?.message) {
+        setErrorList([data.message]);
+      } else {
+        setErrorList(['Đăng ký thất bại.']);
+      }
+
+    }
   };
 
   return (
@@ -76,13 +128,11 @@ function Register() {
         </button>
 
       </div>
-
       <Footer />
     </div>
   );
 };
 
-// Tái sử dụng component input
 const InputField = ({ id, label, type, value, onChange }) => (
   <div className="flex flex-col relative hover:scale-105 transition-transform duration-300">
     <div className="bg-transparent md:bg-steam mb-5">
