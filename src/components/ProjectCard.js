@@ -1,16 +1,26 @@
 import React from "react";
 import { Card, Tag, Button, Row, Col, Progress, Typography } from "antd";
 import { Link } from "react-router-dom";
-import { ClockCircleOutlined, UserOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 
 const ProjectCard = ({ project }) => {
   const daysLeft = Math.ceil(
-    (new Date(project?.endDate) - new Date()) / (1000 * 60 * 60 * 24)
+    (new Date(project["end-datetime"]) - new Date()) / (1000 * 60 * 60 * 24)
   );
   const progressPercentage =
-    (project?.currentAmount / project?.goalAmount) * 100;
+    (project["total-amount"] / project["minimum-amount"]) * 100;
+
+  const thumbnail =
+    project.thumbnail ||
+    "https://paper.vn/wp-content/uploads/2023/11/placeholder-1-1-1.png";
+
+  const truncateDescription = (text, charLimit) => {
+    if (!text) return "";
+    return text.length > charLimit
+      ? text.substring(0, charLimit) + "..."
+      : text;
+  };
 
   return (
     <Card
@@ -18,32 +28,45 @@ const ProjectCard = ({ project }) => {
       cover={
         <img
           alt={project?.title}
-          src={project?.thumbnail}
-          style={{ height: 100, objectFit: "cover" }}
+          src={thumbnail}
+          style={{
+            height: 150,
+            objectFit: "cover",
+
+            borderBottom: "1px solid #ddd",
+          }}
         />
       }
-      style={{ height: "100%" }}
+      style={{
+        height: "100%",
+        backgroundColor: "#e1eeec",
+        border: "1px solid #ddd",
+      }}
     >
       <Title level={4}>{project?.title}</Title>
       <Text type="secondary">by {project?.creator}</Text>
 
-      <Text style={{ display: "block", margin: "16px 0" }}>
-        {project?.description?.length > 150
-          ? `${project?.description?.substring(0, 150)}...`
-          : project?.description}
+      <Text style={{ display: "block", margin: "16px 0", minHeight: "50px" }}>
+        {truncateDescription(project?.description, 100)}
       </Text>
 
-      <Progress percent={Math.min(progressPercentage, 100)} status="active" />
+      <Progress
+        percent={Math.min(progressPercentage, 100)}
+        status="active"
+        strokeColor="#52c41a"
+      />
 
       <Row gutter={16} style={{ marginTop: 16 }}>
         <Col span={8}>
-          <Title level={4}>${project?.currentAmount?.toLocaleString()}</Title>
+          <Title level={4}>
+            ${project["total-amount"]?.toLocaleString() || 0}
+          </Title>
           <Text type="secondary">
-            pledged of ${project?.goalAmount?.toLocaleString()}
+            pledged of ${project["minimum-amount"]?.toLocaleString() || 0}
           </Text>
         </Col>
         <Col span={8}>
-          <Title level={4}>{project?.backers?.toLocaleString()}</Title>
+          <Title level={4}>{project?.backers?.toLocaleString() || 0}</Title>
           <Text type="secondary">backers</Text>
         </Col>
         <Col span={8}>
@@ -52,18 +75,14 @@ const ProjectCard = ({ project }) => {
         </Col>
       </Row>
 
-      <Row style={{ marginTop: 16 }}>
-        {project?.tags?.map((tag) => (
-          <Tag key={tag} color="blue" style={{ margin: 4 }}>
-            {tag}
-          </Tag>
-        ))}
-      </Row>
-
-      <Button type="primary" style={{ marginTop: 16 }}>
-        <Link to={`/project/${project?.id}`}>View Project</Link>
+      <Button
+        type="primary"
+        style={{ marginTop: 16, border: "black solid 0.2px" }}
+      >
+        <Link to={`/project/${project["project-id"]}`}>View Project</Link>
       </Button>
     </Card>
   );
 };
+
 export default ProjectCard;
