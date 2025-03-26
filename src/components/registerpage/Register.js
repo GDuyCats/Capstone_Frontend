@@ -1,158 +1,151 @@
-import React, { useState } from "react";
-import Footer from "../Layout/registerlayout/footer/Footer";
-import { registerUser } from "../../api/apiClient";
 
-function Register() {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    confirmPassword: "",
-    fullname: "",
-  });
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+import React, { useState, useRef } from 'react';
+import Footer from '../Layout/registerlayout/footer/Footer';
+import ReCAPTCHA from 'react-google-recaptcha';
+import axios from 'axios';
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+const Register = () => {
+  const [captchaValue, setCaptchaValue] = useState(null);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [fullname, setFullname] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
+  const [errorList, setErrorList] = useState([]);
+
+  const recaptchaRef = useRef(null);
+  const sitekey = process.env.REACT_APP_RECAPTCHA_SITE_KEY || "your_default_site_key_here";
+
+  const handleCaptchaChange = (value) => {
+    setCaptchaValue(value);
   };
 
-  const handleSubmit = async (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
-    setMessage("");
-    setError("");
-    setIsLoading(true);
+    setSuccessMsg('');
+    setErrorList([]);
 
-    if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match.");
-      setIsLoading(false);
+    if (password !== confirmPassword) {
+      setErrorList(["Mật khẩu và xác nhận mật khẩu không khớp."]);
       return;
     }
 
     try {
-      const response = await registerUser({
-        email: formData.email,
-        password: formData.password,
-        "confirm-password": formData.confirmPassword,
-        fullname: formData.fullname,
-      });
 
-      if (response.status === 200 || response.status === 201) {
-        setMessage("A confirmation email has been sent to your email address.");
-      } else {
-        setError("Failed to register. Please try again.");
-      }
-    } catch (err) {
-      setError(
-        "Error: " + (err.response?.data?.message || "Something went wrong.")
+      const response = await axios.post(
+        'https://marvelous-gentleness-production.up.railway.app/api/Authentication/register',
+        {
+          email,
+          password,
+          "confirm-password": confirmPassword,
+          fullname
+        }
       );
-    } finally {
-      setIsLoading(false);
+
+      setErrorList([]);
+      setSuccessMsg(response.data?.message || 'Đăng ký thành công!');
+      setEmail('');
+      setPassword('');
+      setConfirmPassword('');
+      setFullname('');
+      setCaptchaValue(null);
+      if (recaptchaRef.current) recaptchaRef.current.reset();
+
+    } catch (err) {
+      const data = err.response?.data;
+      const errors = data?.errors;
+
+      if (errors) {
+        const newErrorList = [];
+        for (const key in errors) {
+          newErrorList.push(...errors[key]);
+        }
+        setErrorList(newErrorList);
+      } else if (data?.message) {
+        setErrorList([data.message]);
+      } else {
+        setErrorList(['Đăng ký thất bại.']);
+      }
+
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-gray-900 to-gray-800 items-center">
-      <div className="w-full max-w-md p-8 rounded-lg bg-gray-800 bg-opacity-50 backdrop-blur-sm mt-10 mb-10">
-        <h1 className="text-3xl font-bold text-center mb-8">
-          Create Your Account
-        </h1>
+    <div className="min-h-screen flex flex-col bg-steam items-center">
+      <div className="h-[700px] max-w-7xl flex flex-col items-start mr-0 lg:mr-[500px] pl-3 lg:pl-0">
+        <div className='my-10'>
+          <h1 className='text-5xl text-slate-200'>Tạo tài khoản của bạn</h1>
+        </div>
 
-        <form className="space-y-6" onSubmit={handleSubmit}>
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
-              Full Name
-            </label>
-            <input
-              type="text"
-              name="fullname"
-              placeholder="John Doe"
-              className="w-full px-4 py-3 rounded-lg bg-gray-700 border border-gray-600 focus:border-blue-500 focus:outline-none placeholder-gray-400 transition duration-200"
-              onChange={handleChange}
-              required
+        <form onSubmit={handleRegister}>
+          <div className='my-2 space-y-3'>
+            <InputField id="email" label="Email" type="email" value={email} onChange={e => setEmail(e.target.value)} />
+            <InputField id="password" label="Password" type="password" value={password} onChange={e => setPassword(e.target.value)} />
+            <InputField id="confirm-password" label="Confirm Password" type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
+            <InputField id="fullname" label="Fullname" type="text" value={fullname} onChange={e => setFullname(e.target.value)} />
+          </div>
+
+          <div className="flex justify-center my-4">
+            <ReCAPTCHA
+              sitekey={sitekey}
+              onChange={handleCaptchaChange}
+              ref={recaptchaRef}
             />
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
-              Email
-            </label>
-            <input
-              type="email"
-              name="email"
-              placeholder="your@email.com"
-              className="w-full px-4 py-3 rounded-lg bg-gray-700 border border-gray-600 focus:border-blue-500 focus:outline-none placeholder-gray-400 transition duration-200"
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
-              Password
-            </label>
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                placeholder="••••••••"
-                className="w-full px-4 py-3 rounded-lg bg-gray-700 border border-gray-600 focus:border-blue-500 focus:outline-none placeholder-gray-400 transition duration-200 pr-10"
-                onChange={handleChange}
-                required
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
-              Confirm Password
-            </label>
-            <div className="relative">
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                name="confirmPassword"
-                placeholder="••••••••"
-                className="w-full px-4 py-3 rounded-lg bg-gray-700 border border-gray-600 focus:border-blue-500 focus:outline-none placeholder-gray-400 transition duration-200 pr-10"
-                onChange={handleChange}
-                required
-              />
-            </div>
-          </div>
-
-          {message && (
-            <div className="p-3 bg-green-900 bg-opacity-50 text-green-300 rounded-lg text-sm">
-              {message}
-            </div>
-          )}
-          {error && (
-            <div className="p-3 bg-red-900 bg-opacity-50 text-red-300 rounded-lg text-sm">
-              {error}
-            </div>
-          )}
-
           <button
             type="submit"
-            className={`w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-200 flex items-center justify-center ${
-              isLoading ? "opacity-70 cursor-not-allowed" : ""
-            }`}
-            disabled={isLoading}
+            className={`mt-2 bg-blue-500 text-white px-4 py-2 rounded w-[200px] ${!captchaValue ? "opacity-50 cursor-not-allowed" : ""}`}
+            disabled={!captchaValue}
           >
-            {isLoading ? "Processing..." : "Continue"}
+            Tiếp tục
           </button>
+          
         </form>
-
-        <div className="mt-6 text-center text-sm text-gray-400">
-          Already have an account?{" "}
-          <a href="/login" className="text-red-400 hover:text-blue-300">
-            Sign in
-          </a>
-        </div>
+        {errorList.length > 0 && (
+            <div className="text-red-500 mt-3 w-auto h-auto break-words space-y-1 font-extrabold">
+              {errorList.map((err, idx) => (
+                <p key={idx}>{err}</p>
+              ))}
+            </div>
+          )}
+        {successMsg && (
+            <div className="text-green-500 font-extrabold mt-3 break-words">
+              <p>{successMsg}</p>
+            </div>
+          )}
       </div>
       <Footer />
     </div>
   );
-}
+};
+
+const InputField = ({ id, label, type, value, onChange }) => (
+  <div className="flex flex-col relative hover:scale-105 transition-transform duration-300">
+    <div className="bg-transparent md:bg-steam mb-5">
+      <div className="relative bg-inherit">
+        <input
+          type={type}
+          id={id}
+          name={id}
+          value={value}
+          onChange={onChange}
+          className="peer bg-transparent h-10 w-[250px] lg:w-[300px] rounded-lg text-slate-400 placeholder-transparent ring-2 
+                     px-2 ring-gray-500 focus:ring-sky-600 focus:outline-none focus:border-rose-600"
+          placeholder=""
+        />
+        <label
+          htmlFor={id}
+          className="absolute cursor-text left-0 -top-6 md:-top-3 text-sm 
+                     text-blue_steam bg-inherit mx-1 px-1 peer-placeholder-shown:text-base 
+                     peer-placeholder-shown:text-slate-200 md:peer-placeholder-shown:text-blue_steam 
+                     peer-placeholder-shown:top-2 peer-focus:-top-8 md:peer-focus:-top-3
+                     peer-focus:text-blue_steam peer-focus:text-sm transition-all font-medium"
+        >
+          {label}
+        </label>
+      </div>
+    </div>
+  </div>
+);
 
 export default Register;
