@@ -34,8 +34,6 @@ const Loginform = () => {
         setAuth({ token, user }); // ✅ Lưu vào context
         setSuccessMsg(response.data?.message || 'Đăng nhập thành công!');
         setErrorMsg('');
-        console.log('Token:', token);
-        console.log('User:', user);
         setTimeout(() => {
           navigate('/');
         }, 10000000000000);
