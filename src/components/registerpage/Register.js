@@ -101,14 +101,14 @@ const Register = () => {
           </button>
         </form>
         {errorList.length > 0 && (
-            <div className="text-red-500 mb-2 w-[300px] lg:w-[400px] break-words space-y-1">
+            <div className="text-red-500 my-10 w-[300px] lg:w-[400px] break-words space-y-1">
               {errorList.map((err, idx) => (
                 <p key={idx}>• {err}</p>
               ))}
             </div>
           )}
           {successMsg && (
-            <div className="text-green-500 mb-2 w-[300px] lg:w-[400px] break-words text-center">
+            <div className="text-green-500 my-6 w-[300px] lg:w-[400px] text-center">
               <p>{successMsg}</p>
             </div>
           )}

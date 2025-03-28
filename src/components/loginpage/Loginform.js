@@ -35,7 +35,6 @@ const Loginform = () => {
         setAuth({ token, user });
         setSuccessMsg(response.data?.message || 'Đăng nhập thành công!');
         setErrorMsg('');
-
         setTimeout(() => {
           navigate('/');
         }, 1000);
