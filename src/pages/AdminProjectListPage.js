@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
+import { Modal } from "antd";
 import { Table, Button, Space, message, Tag, Image } from "antd";
 import { useNavigate } from "react-router-dom";
-import axios from "axios"; // 👉 Import axios để gọi API
-import useAuth from "../components/Hooks/useAuth"; // 👉 Lấy token từ AuthContext
+import axios from "axios"; 
+import useAuth from "../components/Hooks/useAuth"; 
 import dayjs from "dayjs";
 
 const AdminProjectListPage = () => {
@@ -30,15 +31,14 @@ const AdminProjectListPage = () => {
 
         console.log("✅ API Response:", response.data);
 
-        // Kiểm tra dữ liệu trả về có phải mảng không
         if (Array.isArray(response.data?.data)) {
           setProjects(response.data.data);
         } else {
-          console.error("❌ Dữ liệu không hợp lệ:", response.data);
-          setProjects([]); // Nếu dữ liệu không hợp lệ, đặt danh sách rỗng
+          console.error("Dữ liệu không hợp lệ:", response.data);
+          setProjects([]); 
         }
       } catch (error) {
-        console.error("❌ Lỗi khi lấy danh sách dự án:", error);
+        console.error("Lỗi khi lấy danh sách dự án:", error);
         message.error("Không thể tải danh sách dự án.");
       } finally {
         setLoading(false);
@@ -46,18 +46,25 @@ const AdminProjectListPage = () => {
     };
 
     fetchProjects();
-  }, [auth]);
+  }, [auth, navigate]);
 
   const handleDelete = async (projectId) => {
-    try {
-      await axios.delete(
-        `https://marvelous-gentleness-production.up.railway.app/api/Project/Delete/${projectId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${auth.token}`,
-          },
-        }
-      );
+    Modal.confirm({
+      title: "Xác nhận xóa dự án",
+      content: "Bạn có chắc chắn muốn xóa dự án này? Hành động này không thể hoàn tác!",
+      okText: "Xóa",
+      okType: "danger",
+      cancelText: "Hủy",
+      onOk: async () => {
+        try {
+          await axios.delete(
+            `https://marvelous-gentleness-production.up.railway.app/api/Project/DeleteProject?id=${projectId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${auth.token}`,
+              },
+            }
+          );
 
       message.success("✅ Project deleted successfully!");
       setProjects((prev) =>
@@ -67,10 +74,8 @@ const AdminProjectListPage = () => {
       console.error("❌ Lỗi khi xóa dự án:", error);
       message.error("Failed to delete project");
     }
-
   };
 
-  // 🏗️ Cấu hình cột cho bảng
   const columns = [
     {
       title: "Thumbnail",
@@ -113,13 +118,20 @@ const AdminProjectListPage = () => {
       render: (_, record) => (
         <Space>
           <Button
-            onClick={() =>
-              navigate(`/admin/project/${record["project-id"]}`)
-            }
+            onClick={(e) => {
+              e.stopPropagation(); // ✅ Ngăn sự kiện click trên dòng
+              navigate(`/admin/project/${record["project-id"]}`);
+            }}
           >
             Edit
           </Button>
-          <Button danger onClick={() => handleDelete(record["project-id"])}>
+          <Button
+            danger
+            onClick={(e) => {
+              e.stopPropagation(); // ✅ Ngăn sự kiện click trên dòng
+              handleDelete(record["project-id"]);
+            }}
+          >
             Delete
           </Button>
         </Space>
@@ -135,6 +147,10 @@ const AdminProjectListPage = () => {
       loading={loading} 
       pagination={{ pageSize: 10 }}
       style={{ cursor: "pointer" }}
+      // ✅ Thêm sự kiện click vào dòng để chuyển trang
+      onRow={(record) => ({
+        onClick: () => navigate(`/admin/project/${record["project-id"]}`),
+      })}
     />
   );
 };

@@ -11,37 +11,27 @@ import {
   Input,
   Upload,
   message,
-  Table,
   Tabs,
-  Tag,
   Typography,
 } from "antd";
 import {
   UserOutlined,
   EditOutlined,
-  TrophyOutlined,
   UploadOutlined,
-  GiftOutlined,
 } from "@ant-design/icons";
 
 const { TabPane } = Tabs;
 const { Title } = Typography;
 
 const ProfilePage = () => {
-  const { auth, setAuth } = useAuth(); // ✅ Thêm `setAuth` để cập nhật avatar vào auth
+  const { auth, setAuth } = useAuth(); // ✅ Dùng setAuth để cập nhật dữ liệu user
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form] = Form.useForm();
-  const [user, setUser] = useState(null);
-  const [rewards, setRewards] = useState([]);
   const [loading, setLoading] = useState(false);
   const [avatarLoading, setAvatarLoading] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
-      if (!auth?.token) {
-        return;
-      }
-
       try {
         const res = await axios.get(
           "https://marvelous-gentleness-production.up.railway.app/api/User/GetUserById",
@@ -51,64 +41,93 @@ const ProfilePage = () => {
             },
           }
         );
-        setUser(res.data?.data);
+        const userData = res.data?.data;
+        setAuth((prev) => ({
+          ...prev,
+          fullname: userData?.["full-name"],
+          avatar: userData?.avatar,
+          bio: userData?.bio,
+          phone: userData?.phone,
+          createdDate: userData?.["created-datetime"],
+          email: userData?.email,
+        }));
       } catch (error) {
         console.error("Lỗi khi lấy dữ liệu user:", error);
       }
     };
-
     fetchUserData();
-  }, [auth]);
+  }, [auth?.token]);
 
   const showModal = () => {
+    form.setFieldsValue({
+      email: auth?.email || "",
+      phone: auth?.phone || "",
+      fullname: auth?.fullname || "",
+      bio: auth?.bio || "",
+    });
     setIsModalOpen(true);
-    form.setFieldsValue(user);
   };
 
   const handleOk = async () => {
     try {
+      // 🟢 Lấy toàn bộ giá trị từ form
       const values = await form.validateFields();
+  
+      // 🟢 Cập nhật lại form để xóa giá trị password nếu nó rỗng
+      if (!values.password || values.password.trim() === "") {
+        form.setFieldsValue({ password: undefined }); // Xóa password khỏi form trước khi gửi
+        delete values.password; // Xóa khỏi object trước khi gửi API
+      }
+  
+      console.log("Payload gửi lên API:", values); // 🛠 Debug để kiểm tra payload có password hay không
+  
       setLoading(true);
-
-      await axios.post(
+  
+      const res = await axios.post(
         "https://marvelous-gentleness-production.up.railway.app/api/User/UpdateUser",
-        {
-          email: values.email,
-          phone: values.phone,
-          fullname: values["full-name"],
-          bio: values.bio,
-          password: values.password,
-        },
+        values, // Gửi dữ liệu lên API
         {
           headers: {
             Authorization: `Bearer ${auth.token}`,
           },
         }
       );
-
+  
       setLoading(false);
-      setUser({ ...user, ...values });
       message.success("Cập nhật thông tin thành công!");
+  
+      // 🟢 Cập nhật auth nhưng không lưu password
+      setAuth((prev) => ({
+        ...prev,
+        ...values,
+      }));
+  
+      localStorage.setItem(
+        "auth",
+        JSON.stringify({
+          ...auth,
+          ...values,
+          password: undefined, // Không lưu password
+        })
+      );
+  
       setIsModalOpen(false);
     } catch (error) {
       setLoading(false);
+      console.error("Lỗi khi cập nhật thông tin:", error);
       message.error("Lỗi khi cập nhật thông tin.");
     }
   };
-
-  // ✅ Cập nhật avatar & lưu vào auth
+  
   const handleUploadAvatar = async (file) => {
     if (!file) {
       message.error("Vui lòng chọn một file!");
       return;
     }
-
     const formData = new FormData();
     formData.append("file", file);
-
     try {
       setAvatarLoading(true);
-
       const res = await axios.put(
         "https://marvelous-gentleness-production.up.railway.app/api/User/avatar",
         formData,
@@ -119,35 +138,27 @@ const ProfilePage = () => {
           },
         }
       );
-
       setAvatarLoading(false);
-      console.log("Response từ API:", res.data);
-
       if (res.data?.["image-url"]) {
         const newAvatarUrl = `${res.data["image-url"]}?t=${Date.now()}`;
-
-        // ✅ Cập nhật avatar trong user state
-        setUser((prevUser) => ({
-          ...prevUser,
+        setAuth((prev) => ({
+          ...prev,
           avatar: newAvatarUrl,
         }));
-
-        // ✅ Cập nhật avatar trong auth
-        const updatedAuth = {
-          ...auth,
-          user: { ...auth.user, avatar: newAvatarUrl },
-        };
-        setAuth(updatedAuth);
-        localStorage.setItem("auth", JSON.stringify(updatedAuth));
-
+        localStorage.setItem(
+          "auth",
+          JSON.stringify({
+            ...auth,
+            avatar: newAvatarUrl,
+          })
+        );
         message.success("Cập nhật ảnh đại diện thành công!");
       } else {
         message.error("Lỗi khi cập nhật ảnh đại diện!");
       }
     } catch (error) {
       setAvatarLoading(false);
-      console.error("Lỗi khi tải lên ảnh:", error);
-      message.error("Lỗi khi tải lên ảnh! Thử lại sau.");
+      message.error("Không đúng định dạng ảnh");
     }
   };
 
@@ -156,12 +167,10 @@ const ProfilePage = () => {
       <div style={{ textAlign: "center", marginBottom: 24 }}>
         <Avatar
           size={100}
-          src={user?.avatar ? user.avatar : undefined}
-          icon={!user?.avatar && <UserOutlined />}
-          style={{ marginBottom: 16 }}
+          src={auth?.avatar ? `${auth.avatar}?t=${Date.now()}` : undefined}
+          icon={!auth?.avatar && <UserOutlined />}
         />
         <Title level={4}>My Profile</Title>
-
         <Upload
           showUploadList={false}
           beforeUpload={(file) => {
@@ -174,108 +183,32 @@ const ProfilePage = () => {
           </Button>
         </Upload>
       </div>
-
-      {user ? (
-        <Tabs defaultActiveKey="1">
-          <TabPane
-            tab={
-              <span>
-                <UserOutlined />
-                Profile Info
-              </span>
-            }
-            key="1"
-          >
-            <Descriptions bordered column={1}>
-              <Descriptions.Item label="Email">{user.email}</Descriptions.Item>
-              <Descriptions.Item label="Phone">{user.phone}</Descriptions.Item>
-              <Descriptions.Item label="Created Date">
-                {user["created-datetime"]}
-              </Descriptions.Item>
-              <Descriptions.Item label="Full name">
-                {user["full-name"]}
-              </Descriptions.Item>
-              <Descriptions.Item label="Bio">{user.bio}</Descriptions.Item>
-            </Descriptions>
-            <Button
-              style={{ marginTop: "20px" }}
-              key="edit"
-              icon={<EditOutlined />}
-              onClick={showModal}
-            >
-              Edit Profile
-            </Button>
-          </TabPane>
-
-          <TabPane
-            tab={
-              <span>
-                <TrophyOutlined />
-                My Rewards
-              </span>
-            }
-            key="2"
-          >
-            <div style={{ marginBottom: 16 }}>
-              <Title level={5}>
-                <GiftOutlined /> Rewards from Backed Projects
-              </Title>
-            </div>
-            <Table
-              dataSource={rewards}
-              columns={[
-                {
-                  title: "Project",
-                  dataIndex: "projectName",
-                  key: "projectName",
-                  render: (text, record) => (
-                    <a href={`/project/${record.projectId}`}>{text}</a>
-                  ),
-                },
-                {
-                  title: "Reward",
-                  dataIndex: "rewardTitle",
-                  key: "rewardTitle",
-                  render: (text, record) => (
-                    <div>
-                      <div style={{ fontWeight: "bold" }}>{text}</div>
-                      <div style={{ fontSize: "12px", color: "#666" }}>
-                        {record.rewardDescription}
-                      </div>
-                    </div>
-                  ),
-                },
-                {
-                  title: "Amount",
-                  dataIndex: "amount",
-                  key: "amount",
-                  render: (amount) => `$${amount}`,
-                },
-                {
-                  title: "Date",
-                  dataIndex: "dateReceived",
-                  key: "dateReceived",
-                },
-                {
-                  title: "Status",
-                  dataIndex: "status",
-                  key: "status",
-                  render: (status) => (
-                    <Tag color={status === "Delivered" ? "green" : "orange"}>
-                      {status}
-                    </Tag>
-                  ),
-                },
-              ]}
-              pagination={false}
-            />
-          </TabPane>
-        </Tabs>
-      ) : (
-        <p>Đang tải dữ liệu người dùng...</p>
-      )}
+      <Tabs defaultActiveKey="1">
+        <TabPane tab={<span><UserOutlined /> Profile Info</span>} key="1">
+          <Descriptions bordered column={1}>
+            <Descriptions.Item label="Email">{auth?.email}</Descriptions.Item>
+            <Descriptions.Item label="Phone">{auth?.phone}</Descriptions.Item>
+            <Descriptions.Item label="Created Date">{auth?.createdDate}</Descriptions.Item>
+            <Descriptions.Item label="Full name">{auth?.fullname}</Descriptions.Item>
+            <Descriptions.Item label="Bio">{auth?.bio}</Descriptions.Item>
+          </Descriptions>
+          <Button style={{ marginTop: "20px" }} icon={<EditOutlined />} onClick={showModal}>
+            Edit Profile
+          </Button>
+        </TabPane>
+      </Tabs>
+      <Modal title="Edit Profile" open={isModalOpen} onOk={handleOk} confirmLoading={loading} onCancel={() => setIsModalOpen(false)}>
+        <Form form={form} layout="vertical">
+          <Form.Item label="Email" name="email"><Input /></Form.Item>
+          <Form.Item label="Phone" name="phone"><Input /></Form.Item>
+          <Form.Item label="Full Name" name="fullname"><Input /></Form.Item>
+          <Form.Item label="Bio" name="bio"><Input.TextArea /></Form.Item>
+          <Form.Item label="New Password" name="password">
+            <Input.Password placeholder="Leave blank to keep current password" />
+          </Form.Item>
+        </Form>
+      </Modal>
     </Card>
   );
 };
-
 export default ProfilePage;

@@ -29,7 +29,7 @@ const HeaderBar = () => {
             },
           }
         );
-
+        
         if (res.data?.data?.avatar) {
           setAvatarUrl(`${res.data.data.avatar}?t=${Date.now()}`);
         }

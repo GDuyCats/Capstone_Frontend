@@ -2,7 +2,6 @@ import React, { useState, useRef } from 'react';
 import Footer from '../Layout/registerlayout/footer/Footer';
 import ReCAPTCHA from 'react-google-recaptcha';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
 
 const Register = () => {
   const [captchaValue, setCaptchaValue] = useState(null);
@@ -12,6 +11,7 @@ const Register = () => {
   const [fullname, setFullname] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [errorList, setErrorList] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false); // ✅ Ngăn spam nút
 
   const recaptchaRef = useRef(null);
   const sitekey = process.env.REACT_APP_RECAPTCHA_SITE_KEY || "your_default_site_key_here";
@@ -22,11 +22,15 @@ const Register = () => {
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return; // ✅ Chặn spam nhiều lần
+    setIsSubmitting(true); // ✅ Ngăn người dùng bấm nhiều lần
+
     setSuccessMsg('');
     setErrorList([]);
 
     if (password !== confirmPassword) {
       setErrorList(["Mật khẩu và xác nhận mật khẩu không khớp."]);
+      setIsSubmitting(false); // ✅ Mở lại nút nếu có lỗi
       return;
     }
 
@@ -66,6 +70,8 @@ const Register = () => {
       } else {
         setErrorList(['Đăng ký thất bại.']);
       }
+    } finally {
+      setIsSubmitting(false); // ✅ Mở lại nút sau khi API phản hồi
     }
   };
 
@@ -92,26 +98,30 @@ const Register = () => {
             />
           </div>
 
+          {/* ✅ Nút Tiếp tục: Chỉ bấm được một lần, hiển thị loading */}
           <button
             type="submit"
-            className={`mt-2 bg-blue-500 text-white px-4 py-2 rounded w-[200px] ${!captchaValue ? "opacity-50 cursor-not-allowed" : ""}`}
-            disabled={!captchaValue}
+            className={`mt-2 bg-blue-500 text-white px-4 py-2 rounded w-[200px] 
+              ${!captchaValue || isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
+            disabled={!captchaValue || isSubmitting}
           >
-            Tiếp tục
+            {isSubmitting ? "Đang xử lý..." : "Tiếp tục"}
           </button>
         </form>
+
         {errorList.length > 0 && (
-            <div className="text-red-500 my-10 w-[300px] lg:w-[400px] break-words space-y-1">
-              {errorList.map((err, idx) => (
-                <p key={idx}>• {err}</p>
-              ))}
-            </div>
-          )}
-          {successMsg && (
-            <div className="text-green-500 my-6 w-[300px] lg:w-[400px] text-center">
-              <p>{successMsg}</p>
-            </div>
-          )}
+          <div className="text-red-500 my-10 w-[300px] lg:w-[400px] break-words space-y-1">
+            {errorList.map((err, idx) => (
+              <p key={idx}>• {err}</p>
+            ))}
+          </div>
+        )}
+
+        {successMsg && (
+          <div className="text-green-500 my-6 w-[300px] lg:w-[400px] text-center">
+            <p>{successMsg}</p>
+          </div>
+        )}
       </div>
 
       <Footer />
@@ -119,7 +129,7 @@ const Register = () => {
   );
 };
 
-// Tái sử dụng component input
+// 🔄 Tái sử dụng component InputField
 const InputField = ({ id, label, type, value, onChange }) => (
   <div className="flex flex-col relative hover:scale-105 transition-transform duration-300">
     <div className="bg-transparent md:bg-steam mb-5">
