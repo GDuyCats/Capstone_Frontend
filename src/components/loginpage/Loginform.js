@@ -32,14 +32,12 @@ const Loginform = () => {
       const user = response.data?.user || { username };
 
       if (token) {
-        setAuth({ token, user }); // ✅ Lưu vào context
+        setAuth({ token, user });
         setSuccessMsg(response.data?.message || 'Đăng nhập thành công!');
         setErrorMsg('');
-        console.log('Token:', token);
-        console.log('User:', user);
         setTimeout(() => {
           navigate('/');
-        }, 10000000000000);
+        }, 1000);
       } else {
         setErrorMsg('Không nhận được token từ máy chủ!');
         setSuccessMsg('');
