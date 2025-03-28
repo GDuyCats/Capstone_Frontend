@@ -5,6 +5,8 @@ import { Typography } from "antd";
 
 const { Content } = Layout;
 
+
+
 const GamePage = () => {
   return (
     <Layout style={{ minHeight: "100vh" }}>

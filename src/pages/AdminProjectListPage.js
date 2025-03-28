@@ -6,12 +6,11 @@ import useAuth from "../components/Hooks/useAuth"; // 👉 Lấy token từ Auth
 import dayjs from "dayjs";
 
 const AdminProjectListPage = () => {
-  const { auth } = useAuth(); // ✅ Lấy token từ AuthContext
+  const { auth } = useAuth(); 
   const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true); // ✅ Thêm state loading
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // 📌 Gọi API lấy danh sách dự án
   useEffect(() => {
     const fetchProjects = async () => {
       if (!auth?.token) {
@@ -42,14 +41,13 @@ const AdminProjectListPage = () => {
         console.error("❌ Lỗi khi lấy danh sách dự án:", error);
         message.error("Không thể tải danh sách dự án.");
       } finally {
-        setLoading(false); // ✅ Tắt loading sau khi API chạy xong
+        setLoading(false);
       }
     };
 
     fetchProjects();
   }, [auth]);
 
-  // 🗑️ Xử lý xóa dự án
   const handleDelete = async (projectId) => {
     try {
       await axios.delete(
@@ -69,6 +67,7 @@ const AdminProjectListPage = () => {
       console.error("❌ Lỗi khi xóa dự án:", error);
       message.error("Failed to delete project");
     }
+
   };
 
   // 🏗️ Cấu hình cột cho bảng
@@ -132,8 +131,8 @@ const AdminProjectListPage = () => {
     <Table
       dataSource={projects}
       columns={columns}
-      rowKey="project-id" // ✅ Đổi key theo API
-      loading={loading} // ✅ Hiển thị loading trong khi tải dữ liệu
+      rowKey="project-id"
+      loading={loading} 
       pagination={{ pageSize: 10 }}
       style={{ cursor: "pointer" }}
     />
