@@ -85,7 +85,7 @@ const InvisibleProjects = () => {
       render: (record) => (
         <EyeOutlined
           className="text-blue-500 cursor-pointer text-lg"
-          onClick={() => navigate(`/admin/project/${record["project-id"]}`)}
+          onClick={() => navigate(`/staff/project/${record["project-id"]}`)}
         />
       ),
     },

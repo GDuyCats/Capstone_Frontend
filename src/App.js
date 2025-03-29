@@ -13,6 +13,7 @@ import GamePage from "./pages/GamePage";
 import GameDetailPage from "./pages/GameDetailPage";
 import AdminProjectListPage from "./pages/AdminProjectListPage";
 import AdminProjectDetailPage from "./pages/AdminProjectDetailPage";
+import StaffProjectDetailPage from "./pages/StaffProjectDetailPage";
 import CreateProjectForm from "./pages/CreateProjectForm";
 import RequireAuth from "./Context/RequireAuth";
 import InvisibleProjects from "./pages/InvisibleProjectsPage";
@@ -39,22 +40,25 @@ function App() {
 
         <Route element={<RequireAuth roles={["Admin"]} />}>
           <Route path="/admin/projects" element={<AdminProjectListPage />} />
-        </Route>
-
-        <Route element={<RequireAuth roles={["Staff"]} />}>
-          <Route path="/invisible-projects" element={<InvisibleProjects />} />
-          <Route path="/approved-projects" element={<ApprovedProjects />} />
-        </Route>
-
-        <Route element={<RequireAuth roles={["Customer"]} />}>
-          <Route path="/create-project" element={<CreateProjectForm />} />
-        </Route>
-        <Route element={<RequireAuth roles={["Admin", "Staff"]} />}>
           <Route
             path="/admin/project/:id"
             element={<AdminProjectDetailPage />}
           />
         </Route>
+
+        <Route element={<RequireAuth roles={["Staff"]} />}>
+          <Route path="/invisible-projects" element={<InvisibleProjects />} />
+          <Route path="/approved-projects" element={<ApprovedProjects />} />
+          <Route
+            path="/staff/project/:id"
+            element={<StaffProjectDetailPage />}
+          />
+        </Route>
+
+        <Route element={<RequireAuth roles={["Customer"]} />}>
+          <Route path="/create-project" element={<CreateProjectForm />} />
+        </Route>
+        <Route element={<RequireAuth roles={["Admin", "Staff"]} />}></Route>
         <Route element={<RequireAuth roles={["Admin", "Staff", "Customer"]} />}>
           <Route path="/profile" element={<ProfilePage />} />
         </Route>
