@@ -1,3 +1,4 @@
+
 import axios from 'axios';
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
@@ -28,15 +29,14 @@ const Loginform = () => {
       );
 
       const token = response.data?.token;
-      const user = response.data?.user || { username };
-
+      const role = response.data?.role
       if (token) {
-        setAuth({ token, user }); // ✅ Lưu vào context
+        setAuth({ token, role });
         setSuccessMsg(response.data?.message || 'Đăng nhập thành công!');
         setErrorMsg('');
         setTimeout(() => {
           navigate('/');
-        }, 10000000000000);
+        }, 1000);
       } else {
         setErrorMsg('Không nhận được token từ máy chủ!');
         setSuccessMsg('');
@@ -191,5 +191,6 @@ const Loginform = () => {
     </form>
   );
 };
+
 
 export default Loginform;

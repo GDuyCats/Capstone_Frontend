@@ -1,0 +1,119 @@
+.tiptap-editor-container .tiptap {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 16px;
+  min-height: 300px;
+  font-family: Arial, sans-serif;
+  overflow: auto; /* Đảm bảo không bị tràn */
+
+  p {
+    margin-bottom: 12px;
+  }
+
+  pre {
+    background: #282c34;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    overflow-x: auto; /* Giúp code block không bị tràn */
+  }
+
+  code {
+    background: #f4f4f4;
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-size: 14px;
+  }
+}
+
+.menu-bar {
+  display: flex;
+  flex-wrap: wrap; /* Để tránh bị tràn */
+  gap: 8px; /* Tạo khoảng cách giữa các nút */
+  padding-bottom: 8px;
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 8px;
+  align-items: center;
+
+  button,
+  select,
+  input {
+    background: #f4f4f4;
+    border: 1px solid #ccc;
+    padding: 6px 10px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 14px;
+  }
+
+  button.is-active {
+    background: #ddd;
+    font-weight: bold;
+  }
+
+  button:hover,
+  select:hover,
+  input:hover {
+    background: #e0e0e0;
+  }
+
+  /* Cố định dropdown */
+  select {
+    position: relative;
+    z-index: 10;
+    min-width: 60px; /* Đảm bảo kích thước phù hợp */
+  }
+}
+
+.editor-container {
+  width: 100%;
+  min-height: 200px;
+  overflow: auto; /* Tránh tràn */
+}
+
+.tiptap {
+  h1 {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 0.5em;
+  }
+
+  h2 {
+    font-size: 1.75rem;
+    font-weight: bold;
+    margin-bottom: 0.5em;
+  }
+  h3 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 0.5em;
+  }
+
+  h4 {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-bottom: 0.5em;
+  }
+
+  h5 {
+    font-size: 1rem;
+    font-weight: bold;
+    margin-bottom: 0.5em;
+  }
+  ul {
+    list-style-type: disc;
+    padding-left: 20px;
+  }
+
+  ol {
+    list-style-type: decimal;
+    padding-left: 20px;
+  }
+
+  blockquote {
+    border-left: 3px solid #ccc;
+    padding-left: 10px;
+    color: #666;
+    font-style: italic;
+  }
+}
