@@ -39,8 +39,9 @@ const Loginform = () => {
         console.log("User:", user);
         console.log("User:", role);
         setTimeout(() => {
-          navigate("/");
-        }, 500);
+          navigate('/');
+        }, 1000);
+
       } else {
         setErrorMsg("Không nhận được token từ máy chủ!");
         setSuccessMsg("");

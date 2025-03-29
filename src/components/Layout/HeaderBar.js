@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, createContext, useContext } from "react";
 import {
   Layout,
@@ -14,17 +15,13 @@ import {
   SearchOutlined,
   ProjectOutlined,
 } from "@ant-design/icons";
+
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import useAuth from "../Hooks/useAuth";
 
 const { Header } = Layout;
 const { Text } = Typography;
-
-// ✅ Tạo context để chia sẻ avatar giữa các component
-const AvatarContext = createContext();
-
-export const useAvatar = () => useContext(AvatarContext);
 
 const HeaderBar = () => {
   const navigate = useNavigate();
@@ -56,11 +53,12 @@ const HeaderBar = () => {
     }
   }, [auth]);
 
+
   const handleLogout = () => {
     setAuth(null);
     localStorage.removeItem("auth");
-    message.success("Logged out successfully!");
-    navigate("/");
+    message.success("Đăng xuất thành công!");
+    navigate("/login");
   };
 
   const userMenu = (
@@ -172,6 +170,7 @@ const HeaderBar = () => {
         </Space>
       </Header>
     </AvatarContext.Provider>
+
   );
 };
 

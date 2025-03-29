@@ -24,7 +24,7 @@ const { TabPane } = Tabs;
 const { Title } = Typography;
 
 const ProfilePage = () => {
-  const { auth, setAuth } = useAuth(); // ✅ Dùng setAuth để cập nhật dữ liệu user
+  const { auth, setAuth } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -73,22 +73,29 @@ const ProfilePage = () => {
       // 🟢 Lấy toàn bộ giá trị từ form
       const values = await form.validateFields();
   
-      // 🟢 Cập nhật lại form để xóa giá trị password nếu nó rỗng
-      if (!values.password || values.password.trim() === "") {
-        form.setFieldsValue({ password: undefined }); // Xóa password khỏi form trước khi gửi
-        delete values.password; // Xóa khỏi object trước khi gửi API
+      setLoading(true);
+  
+      // 🟢 Tạo FormData để gửi dữ liệu theo `multipart/form-data`
+      const formData = new FormData();
+      formData.append("fullname", values.fullname);
+      formData.append("email", values.email);
+      formData.append("phone", values.phone);
+      formData.append("bio", values.bio);
+  
+      // Nếu người dùng nhập mật khẩu, thêm vào FormData
+      if (values.password && values.password.trim() !== "") {
+        formData.append("password", values.password);
       }
   
-      console.log("Payload gửi lên API:", values); // 🛠 Debug để kiểm tra payload có password hay không
-  
-      setLoading(true);
+      console.log("🔍 Payload gửi lên API (FormData):", Object.fromEntries(formData));
   
       const res = await axios.post(
         "https://marvelous-gentleness-production.up.railway.app/api/User/UpdateUser",
-        values, // Gửi dữ liệu lên API
+        formData, // Gửi dữ liệu lên API
         {
           headers: {
             Authorization: `Bearer ${auth.token}`,
+            "Content-Type": "multipart/form-data", // Quan trọng 🔥
           },
         }
       );
@@ -99,25 +106,31 @@ const ProfilePage = () => {
       // 🟢 Cập nhật auth nhưng không lưu password
       setAuth((prev) => ({
         ...prev,
-        ...values,
+        fullname: values.fullname,
+        email: values.email,
+        phone: values.phone,
+        bio: values.bio,
       }));
   
       localStorage.setItem(
         "auth",
         JSON.stringify({
           ...auth,
-          ...values,
-          password: undefined, // Không lưu password
+          fullname: values.fullname,
+          email: values.email,
+          phone: values.phone,
+          bio: values.bio,
         })
       );
   
       setIsModalOpen(false);
     } catch (error) {
       setLoading(false);
-      console.error("Lỗi khi cập nhật thông tin:", error);
+      console.error("❌ Lỗi khi cập nhật thông tin:", error);
       message.error("Lỗi khi cập nhật thông tin.");
     }
   };
+  
   
   const handleUploadAvatar = async (file) => {
     if (!file) {
