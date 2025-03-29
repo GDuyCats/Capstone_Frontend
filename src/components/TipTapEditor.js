@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { useState } from "react";
 import { EditorProvider, useCurrentEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Bold from "@tiptap/extension-bold";
@@ -156,23 +157,18 @@ const extensions = [
 ];
 
 const TipTapEditor = ({ content, setContent }) => {
-  const { editor } = useCurrentEditor();
-
-  useEffect(() => {
-    if (editor && content !== editor.getHTML()) {
-      editor.commands.setContent(content);
-    }
-  }, [content, editor]);
-
   return (
     <div className="tiptap-editor-container">
       <EditorProvider
         slotBefore={<MenuBar />}
         extensions={extensions}
         content={content}
-        onUpdate={({ editor }) => setContent(editor.getHTML())}
+        onUpdate={({ editor }) => {
+          const newContent = editor.getHTML();
+          setContent(newContent);
+        }}
       >
-        <EditorContent editor={editor} />
+        <EditorContent />
       </EditorProvider>
     </div>
   );

@@ -38,6 +38,10 @@ export const fetchRewardsByProjectId = (id) =>
   apiAuth.get(`/api/Reward/GetRewardByProjectId?projectId=${id}`);
 export const fetchProjectsAdmin = () =>
   apiAuth.get("/api/Project/GetAllProjectByMonitor");
+export const fetchUserProjects = () =>
+  apiAuth.get("/api/Project/GetProjectByUserId");
+export const deleteProject = (projectId) =>
+  apiAuth.delete(`/api/Project/DeleteProject?id=${projectId}`);
 export const staffApproveProject = ({ projectId, status, reason }) => {
   return apiAuth.put(`/api/Project/StaffApproveProject`, null, {
     params: { projectId, status, reason },
@@ -46,13 +50,25 @@ export const staffApproveProject = ({ projectId, status, reason }) => {
 export const fetchProjects = () => apiBase.get("/api/Project/GetAllProject");
 export const fetchProject = (id) =>
   apiBase.get(`/api/Project/GetProjectById?id=${id}`);
-export const createProject = (data) =>
-  apiAuth.post("/api/Project/CreateProject", data);
+export const createProject = (data) => {
+  const formData = new FormData();
+  formData.append("Title", data.Title);
+  formData.append("Description", data.Description);
+  formData.append("MinimumAmount", data.MinimumAmount);
+  formData.append("StartDatetime", data.StartDatetime);
+  formData.append("EndDatetime", data.EndDatetime);
+  return apiAuth.post("/api/Project/CreateProject", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
 export const registerUser = (data) =>
   apiBase.post("/api/Authentication/register", data);
 export const login = (data) => apiBase.post("/api/Authentication/login", data);
 export const getComment = (data) => apiBase.get("/api/Comment", data);
-// apiClient.js
+export const updateProject = (id, data) =>
+  apiAuth.post(`/api/Project/UpdateProject?projectId=${id}`, data);
 export const updateThumbnail = (projectId, file) => {
   const formData = new FormData();
   formData.append("file", file);
@@ -78,9 +94,7 @@ export const updateStory = (projectId, story) => {
 
 // export const fetchProjects = () => apiClient1.get("/game");
 export const fetchProjectDetails = (id) => apiClient1.get(`/game/${id}`);
-export const updateProject = (id, data) =>
-  axios.put(`/api/projects/${id}`, data);
-export const deleteProject = (id) => axios.delete(`/api/projects/${id}`);
+
 export const fetchGames = () => apiClient.get("/projects");
 export const fetchGameDetails = (id) => apiClient.get(`/projects/${id}`); // Add a new board to a project
 export const addBoardToProject = (projectId, boardData) =>

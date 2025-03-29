@@ -124,11 +124,11 @@ const CreateProjectForm = () => {
         await form.validateFields();
         const values = form.getFieldsValue();
         const formattedValues = {
-          title: values.title,
-          description: values.description,
-          "minimum-amount": values.minimumAmount,
-          "start-datetime": values.startDatetime.toISOString(),
-          "end-datetime": values.endDatetime.toISOString(),
+          Title: values.title,
+          Description: values.description,
+          MinimumAmount: values.minimumAmount,
+          StartDatetime: values.startDatetime.toISOString(),
+          EndDatetime: values.endDatetime.toISOString(),
         };
 
         setLoading(true);
@@ -139,7 +139,10 @@ const CreateProjectForm = () => {
         message.success("Project created successfully!");
         setCurrentStep(currentStep + 1);
       } catch (error) {
-        message.error("Please fill all required fields correctly");
+        console.error("Error creating project:", error.response?.data);
+        message.error(
+          error.response?.data?.message || "Failed to create project"
+        );
       } finally {
         setLoading(false);
       }
