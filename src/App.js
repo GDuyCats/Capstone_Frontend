@@ -22,16 +22,16 @@ function App() {
       <Route path="/" element={<LayoutCom />}>
         <Route element={<RequireAuth roles={["Admin"]}></RequireAuth>}>
           <Route path="/admin/projects" element={<AdminProjectListPage />} />
-          <Route path="/admin/project/:id" element={<AdminProjectDetailPage />}
-        />
+          <Route path="/admin/project/:id" element={<AdminProjectDetailPage />} />
         </Route>
+        
         <Route path="/" element={<HomePage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        
         <Route path="/project/:id" element={<ProjectDetailPage />} />{" "}
         <Route path="/create-project" element={<CreateProjectForm />} />{" "}
         <Route element={<RequireAuth roles={["Staff"]}></RequireAuth>}></Route>
         <Route element={<RequireAuth roles={["Customer"]}></RequireAuth>}></Route>
-        <Route element={<RequireAuth roles={["Admin"]}></RequireAuth>}></Route>
         {/* <Route path="/task" element={<TaskPage />} /> */}
         <Route path="/profile/:id" element={<UserProfilePage />} />
         <Route path="/games" element={<GamePage />} />
