@@ -55,7 +55,6 @@ const ProjectDetailPage = () => {
         const response = await fetchProject(id);
         if (response.data.success) {
           setProject(response.data.data);
-          // Fetch rewards data
           const rewardsResponse = await fetchRewardsByProjectId(
             response.data.data["project-id"] || id
           );
@@ -140,44 +139,6 @@ const ProjectDetailPage = () => {
             console.log("Edit Comment:", id, newContent)
           }
         />
-      ),
-    },
-    {
-      key: "4",
-      label: (
-        <span>
-          <DollarOutlined /> Rewards
-        </span>
-      ),
-      children: (
-        <div>
-          <Title level={4} style={{ marginBottom: 16 }}>
-            Available Rewards
-          </Title>
-          {rewards.length > 0 ? (
-            <List
-              itemLayout="vertical"
-              dataSource={rewards.sort((a, b) => a.amount - b.amount)}
-              renderItem={(reward) => (
-                <List.Item
-                  key={reward["reward-id"]}
-                  extra={<Button type="primary">Select Reward</Button>}
-                >
-                  <List.Item.Meta
-                    title={`Pledge $${reward.amount.toLocaleString()} or more`}
-                    description={reward.details}
-                  />
-                  <Text type="secondary">
-                    Created:{" "}
-                    {new Date(reward["created-datetime"]).toLocaleDateString()}
-                  </Text>
-                </List.Item>
-              )}
-            />
-          ) : (
-            <Paragraph type="secondary">No rewards available</Paragraph>
-          )}
-        </div>
       ),
     },
   ];
@@ -283,8 +244,8 @@ const ProjectDetailPage = () => {
                 currentAmount: project?.["total-amount"] ?? 0,
                 goalAmount: project?.["minimum-amount"] ?? 0,
                 endDate: project?.["end-datetime"],
-                rewards: rewards,
               }}
+              rewards={rewards}
             />
           </Col>
         </Row>

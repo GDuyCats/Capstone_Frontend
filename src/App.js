@@ -18,7 +18,8 @@ import CreateProjectForm from "./pages/CreateProjectForm";
 import RequireAuth from "./Context/RequireAuth";
 import InvisibleProjects from "./pages/InvisibleProjectsPage";
 import ApprovedProjects from "./pages/ApprovedProjectPage";
-
+import MyProjectList from "./pages/MyProjectListPage";
+import UserEditProject from "./pages/UserEditProject";
 function App() {
   return (
     <Routes>
@@ -57,6 +58,11 @@ function App() {
 
         <Route element={<RequireAuth roles={["Customer"]} />}>
           <Route path="/create-project" element={<CreateProjectForm />} />
+          <Route path="/my-projects" element={<MyProjectList />} />
+          <Route
+            path="/edit-project/:projectId"
+            element={<UserEditProject />}
+          />
         </Route>
         <Route element={<RequireAuth roles={["Admin", "Staff"]} />}></Route>
         <Route element={<RequireAuth roles={["Admin", "Staff", "Customer"]} />}>
