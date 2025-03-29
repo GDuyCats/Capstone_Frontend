@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { Layout, Typography, Row, Col, Tabs, Card, Progress, Statistic, Image, Spin, Tag, message } from "antd";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Layout,
@@ -16,7 +15,6 @@ import {
   Tag,
   message,
 } from "antd";
-import { useParams } from "react-router-dom";
 import axios from "axios";
 import { motion } from "framer-motion";
 import useAuth from "../components/Hooks/useAuth";
