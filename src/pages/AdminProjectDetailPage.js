@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { fetchProjectDetails } from "../api/apiClient";
+import { useParams } from "react-router-dom";
+import { fetchProject, fetchRewardsByProjectId } from "../api/apiClient";
 import {
   Layout,
   Typography,
@@ -7,151 +8,274 @@ import {
   Col,
   Tabs,
   Card,
-  Progress,
-  Statistic,
-  Carousel,
+  Spin,
+  Divider,
+  Tag,
 } from "antd";
-import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
+import { UserOutlined } from "@ant-design/icons";
+import TipTapViewer from "../components/TipTapViewer";
 import ProjectComments from "../components/ProjectDetailPage/ProjectComments";
 import ProjectUpdates from "../components/ProjectDetailPage/ProjectUpdates";
+import placeholder from "../assets/placeholder-1-1-1.png";
 
 const { Content } = Layout;
-const { Title, Text, Paragraph } = Typography;
+const { Title, Paragraph, Text } = Typography;
 const { TabPane } = Tabs;
 
 const ProjectDetailPage = () => {
   const { id } = useParams();
   const [loading, setLoading] = useState(true);
   const [project, setProject] = useState(null);
+  const [rewards, setRewards] = useState([]);
+  const [rewardsLoading, setRewardsLoading] = useState(false);
 
   useEffect(() => {
-    fetchProjectDetails(id)
-      .then((response) => {
-        setProject(response.data);
-        setLoading(false);
-      })
-      .catch((error) => {
+    const fetchProjectData = async () => {
+      try {
+        const response = await fetchProject(id);
+        if (response.data.success) {
+          setProject(response.data.data);
+          // Fetch rewards after project data is loaded
+          fetchRewardsData(response.data.data["project-id"] || id);
+        } else {
+          console.error("Error fetching project:", response.data.message);
+        }
+      } catch (error) {
         console.error("Error fetching project details:", error);
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+
+    const fetchRewardsData = async (projectId) => {
+      try {
+        setRewardsLoading(true);
+        const response = await fetchRewardsByProjectId(projectId);
+        if (response.data.success) {
+          setRewards(response.data.data || []);
+        } else {
+          console.error("Error fetching rewards:", response.data.message);
+        }
+      } catch (error) {
+        console.error("Error fetching rewards:", error);
+      } finally {
+        setRewardsLoading(false);
+      }
+    };
+
+    fetchProjectData();
   }, [id]);
 
-  if (loading) return <p>Loading...</p>;
+  if (loading)
+    return (
+      <div style={{ textAlign: "center", padding: "50px" }}>
+        <Spin size="large" />
+      </div>
+    );
   if (!project) return <p>Project not found</p>;
 
-  const daysLeft = Math.ceil(
-    (new Date(project.endDate) - new Date()) / (1000 * 60 * 60 * 24)
-  );
-  const progressPercentage = (project.currentAmount / project.goalAmount) * 100;
+  const daysLeft = project["end-datetime"]
+    ? Math.max(
+        0,
+        Math.ceil(
+          (new Date(project["end-datetime"]) - new Date()) /
+            (1000 * 60 * 60 * 24)
+        )
+      )
+    : 0;
 
   return (
     <Content style={{ padding: "24px" }}>
       <Row gutter={[24, 24]}>
-        <Col span={16}>
+        <Col xs={24} md={16}>
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <Carousel autoplay>
-              {project?.images?.map((img, index) => (
-                <img
-                  key={index}
-                  src={img}
-                  alt={`Project Image ${index + 1}`}
-                  style={{ width: "100%", borderRadius: 8 }}
-                />
-              ))}
-            </Carousel>
-          </motion.div>
-
-          <Tabs defaultActiveKey="1" style={{ marginTop: 24 }}>
-            <TabPane tab="About" key="1">
-              <Paragraph>{project.description}</Paragraph>
-            </TabPane>
-            <TabPane tab="Updates" key="2">
-              <ProjectUpdates updates={project.updates} />{" "}
-            </TabPane>
-            <TabPane tab="Comments" key="3">
-              <ProjectComments
-                comments={[
-                  {
-                    id: 1,
-                    avatar: "https://randomuser.me/api/portraits/men/1.jpg",
-                    name: "John Doe",
-                    content: "This project looks amazing!",
-                    date: "2025-03-10T10:00:00",
-                    edited: false,
-                  },
-                  {
-                    id: 2,
-                    avatar: "https://randomuser.me/api/portraits/women/2.jpg",
-                    name: "Jane Smith",
-                    content: "Can't wait to support this!",
-                    date: "2025-03-11T15:30:00",
-                    edited: true,
-                  },
-                ]}
-                onAddComment={(content) => console.log("Add Comment:", content)}
-                onEditComment={(id, newContent) =>
-                  console.log("Edit Comment:", id, newContent)
+            <div style={{ textAlign: "center", marginBottom: "16px" }}>
+              <img
+                src={
+                  !project.thumbnail || project.thumbnail === "Null"
+                    ? placeholder
+                    : project.thumbnail
+                }
+                alt="Project Thumbnail"
+                style={{
+                  width: "100%",
+                  maxHeight: "400px",
+                  objectFit: "cover",
+                  borderRadius: "12px",
+                  border: "1px solid #d9d9d9",
+                  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+                  transition: "transform 0.3s ease-in-out",
+                }}
+                onMouseOver={(e) =>
+                  (e.currentTarget.style.transform = "scale(1.02)")
+                }
+                onMouseOut={(e) =>
+                  (e.currentTarget.style.transform = "scale(1)")
                 }
               />
+            </div>
+          </motion.div>
+
+          <Tabs defaultActiveKey="1" style={{ marginTop: 24 }} animated>
+            <TabPane tab="About" key="1">
+              {project.story ? (
+                <TipTapViewer content={project.story} />
+              ) : (
+                <Paragraph type="secondary">No story available.</Paragraph>
+              )}
+              <Divider />
+              <Title level={4}>Project Description</Title>
+              <Paragraph>
+                {project.description || "No description available."}
+              </Paragraph>
+            </TabPane>
+            <TabPane tab="Updates" key="2">
+              <ProjectUpdates updates={project.updates} />
+            </TabPane>
+            <TabPane tab="Comments" key="3">
+              <ProjectComments comments={project.comments} />
             </TabPane>
           </Tabs>
         </Col>
 
-        <Col span={8}>
+        <Col xs={24} md={8}>
           <motion.div
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <Card>
-              <Progress
-                percent={Math.min(progressPercentage, 100)}
-                status="active"
-              />
-              <Row gutter={[16, 16]}>
-                <Col span={24}>
-                  <Statistic
-                    title="Pledged"
-                    value={project.currentAmount}
-                    prefix="$"
-                  />
-                  <Text type="secondary">of ${project.goalAmount} goal</Text>
+            <Card
+              style={{
+                borderRadius: "12px",
+                background: "rgb(241, 223, 171)",
+                color: "white",
+                padding: "16px",
+                marginBottom: "24px",
+              }}
+            >
+              <Text strong style={{ fontSize: "26px", display: "block" }}>
+                {project["total-amount"] ? `$${project["total-amount"]}` : "$0"}
+              </Text>
+              <Paragraph style={{ marginBottom: 16 }}>
+                pledged of ${project["minimum-amount"] || "N/A"} goal
+              </Paragraph>
+
+              <Row justify="space-between" style={{ marginBottom: 16 }}>
+                <Col>
+                  <Title level={5} style={{ margin: 0 }}>
+                    Backers
+                  </Title>
+                  <Text strong style={{ fontSize: "20px" }}>
+                    {project.backers || 0}
+                  </Text>
                 </Col>
-                <Col span={12}>
-                  <Statistic title="Backers" value={project.backers} />
-                </Col>
-                <Col span={12}>
-                  <Statistic title="Days to go" value={daysLeft} />
+                <Col>
+                  <Title level={5} style={{ margin: 0 }}>
+                    Days to go
+                  </Title>
+                  <Text
+                    strong
+                    style={{
+                      fontSize: "20px",
+                      color: daysLeft <= 3 ? "red" : "#1890ff",
+                    }}
+                  >
+                    {daysLeft}
+                  </Text>
                 </Col>
               </Row>
+              <Divider style={{ borderColor: "rgba(255,255,255,0.5)" }} />
+            </Card>
+
+            {/* New Rewards Card */}
+            <Card
+              title={
+                <div style={{ display: "flex", alignItems: "center" }}>
+                  <Title level={4} style={{ margin: 0 }}>
+                    Project Rewards
+                  </Title>
+                  <Tag color="gold" style={{ marginLeft: "8px" }}>
+                    {rewards.length} tiers
+                  </Tag>
+                </div>
+              }
+              style={{
+                borderRadius: "12px",
+                marginBottom: "24px",
+                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+              }}
+            >
+              {rewardsLoading ? (
+                <div style={{ textAlign: "center", padding: "24px" }}>
+                  <Spin size="large" />
+                </div>
+              ) : rewards.length > 0 ? (
+                <div style={{ maxHeight: "500px", overflowY: "auto" }}>
+                  {rewards.map((reward, index) => (
+                    <Card
+                      key={reward["reward-id"] || index}
+                      style={{
+                        marginBottom: "16px",
+                        borderLeft: "4px solid #1890ff",
+                        borderRadius: "4px",
+                      }}
+                      bodyStyle={{ padding: "16px" }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          marginBottom: "8px",
+                        }}
+                      >
+                        <Text strong style={{ fontSize: "16px" }}>
+                          Pledge ${reward.amount.toLocaleString()} or more
+                        </Text>
+                        <Tag color="#87d068">Tier {index + 1}</Tag>
+                      </div>
+                      <Paragraph
+                        style={{
+                          marginBottom: 0,
+                          color: "#666",
+                          whiteSpace: "pre-line",
+                        }}
+                      >
+                        {reward.details || "No reward details provided"}
+                      </Paragraph>
+                      <Divider
+                        style={{
+                          margin: "12px 0",
+                          borderColor: "#f0f0f0",
+                        }}
+                      />
+                      <Text type="secondary" style={{ fontSize: "12px" }}>
+                        Created:{" "}
+                        {new Date(
+                          reward["created-datetime"]
+                        ).toLocaleDateString()}
+                      </Text>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <Card
+                  style={{
+                    textAlign: "center",
+                    background: "#fafafa",
+                  }}
+                >
+                  <Paragraph type="secondary" style={{ marginBottom: 0 }}>
+                    No rewards available for this project
+                  </Paragraph>
+                </Card>
+              )}
             </Card>
           </motion.div>
-
-          <Title level={4} style={{ marginTop: 24 }}>
-            Rewards
-          </Title>
-          {project.rewards.map((reward) => (
-            <motion.div
-              key={reward.id}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Card style={{ marginTop: 16 }}>
-                <Title level={5}>${reward.amount} or more</Title>
-                <Title level={4}>{reward.title}</Title>
-                <Paragraph>{reward.description}</Paragraph>
-                <Text type="secondary">
-                  {reward.remainingQuantity} of {reward.limitedQuantity}{" "}
-                  remaining
-                </Text>
-              </Card>
-            </motion.div>
-          ))}
         </Col>
       </Row>
     </Content>

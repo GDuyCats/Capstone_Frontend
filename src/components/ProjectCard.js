@@ -1,7 +1,7 @@
 import React from "react";
 import { Card, Tag, Button, Row, Col, Progress, Typography } from "antd";
 import { Link } from "react-router-dom";
-
+import placeholder from "../assets/placeholder-1-1-1.png";
 const { Title, Text } = Typography;
 
 const ProjectCard = ({ project }) => {
@@ -11,9 +11,7 @@ const ProjectCard = ({ project }) => {
   const progressPercentage =
     (project["total-amount"] / project["minimum-amount"]) * 100;
 
-  const thumbnail =
-    project.thumbnail ||
-    "https://paper.vn/wp-content/uploads/2023/11/placeholder-1-1-1.png";
+  const thumbnail = project.thumbnail || placeholder;
 
   const truncateDescription = (text, charLimit) => {
     if (!text) return "";
