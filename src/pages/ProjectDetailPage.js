@@ -14,6 +14,7 @@ import {
   Result,
   Tag,
   Spin,
+  List,
 } from "antd";
 import {
   ClockCircleOutlined,
@@ -22,12 +23,14 @@ import {
   ShareAltOutlined,
   BulbOutlined,
   MessageOutlined,
+  DollarOutlined,
 } from "@ant-design/icons";
 import TipTapViewer from "../components/TipTapViewer";
+import placeholder from "../assets/placeholder-1-1-1.png";
 import ProjectSidebar from "../components/ProjectDetailPage/ProjectSidebar";
 import ProjectComments from "../components/ProjectDetailPage/ProjectComments";
 import ProjectUpdates from "../components/ProjectDetailPage/ProjectUpdates";
-import { fetchProject } from "../api/apiClient"; // Sửa lại import này
+import { fetchProject, fetchRewardsByProjectId } from "../api/apiClient";
 
 const { Content } = Layout;
 const { Title, Text, Paragraph } = Typography;
@@ -36,6 +39,7 @@ const ProjectDetailPage = () => {
   const { id } = useParams();
   const [loading, setLoading] = useState(true);
   const [project, setProject] = useState(null);
+  const [rewards, setRewards] = useState([]);
   const [activeTab, setActiveTab] = useState("1");
 
   const handleAddUpdate = (updatedUpdates) => {
@@ -48,9 +52,16 @@ const ProjectDetailPage = () => {
   useEffect(() => {
     const fetchProjectData = async () => {
       try {
-        const response = await fetchProject(id); // Sửa lại cách gọi API ở đây
+        const response = await fetchProject(id);
         if (response.data.success) {
           setProject(response.data.data);
+          // Fetch rewards data
+          const rewardsResponse = await fetchRewardsByProjectId(
+            response.data.data["project-id"] || id
+          );
+          if (rewardsResponse.data.success) {
+            setRewards(rewardsResponse.data.data || []);
+          }
         } else {
           console.error("Error fetching project:", response.data.message);
         }
@@ -64,7 +75,6 @@ const ProjectDetailPage = () => {
     fetchProjectData();
   }, [id]);
 
-  // Calculate days left
   const daysLeft = project
     ? Math.ceil(
         (new Date(project["end-datetime"]) - new Date()) / (1000 * 60 * 60 * 24)
@@ -132,6 +142,44 @@ const ProjectDetailPage = () => {
         />
       ),
     },
+    {
+      key: "4",
+      label: (
+        <span>
+          <DollarOutlined /> Rewards
+        </span>
+      ),
+      children: (
+        <div>
+          <Title level={4} style={{ marginBottom: 16 }}>
+            Available Rewards
+          </Title>
+          {rewards.length > 0 ? (
+            <List
+              itemLayout="vertical"
+              dataSource={rewards.sort((a, b) => a.amount - b.amount)}
+              renderItem={(reward) => (
+                <List.Item
+                  key={reward["reward-id"]}
+                  extra={<Button type="primary">Select Reward</Button>}
+                >
+                  <List.Item.Meta
+                    title={`Pledge $${reward.amount.toLocaleString()} or more`}
+                    description={reward.details}
+                  />
+                  <Text type="secondary">
+                    Created:{" "}
+                    {new Date(reward["created-datetime"]).toLocaleDateString()}
+                  </Text>
+                </List.Item>
+              )}
+            />
+          ) : (
+            <Paragraph type="secondary">No rewards available</Paragraph>
+          )}
+        </div>
+      ),
+    },
   ];
 
   return (
@@ -165,9 +213,18 @@ const ProjectDetailPage = () => {
             <Card
               cover={
                 <img
-                  src={project.thumbnail}
+                  src={
+                    !project.thumbnail || project.thumbnail === "Null"
+                      ? placeholder
+                      : project.thumbnail
+                  }
                   alt={project.title}
-                  style={{ width: "100%", height: 400, objectFit: "cover" }}
+                  style={{
+                    width: "100%",
+                    height: 400,
+                    objectFit: "cover",
+                    border: "black solid 0.5px",
+                  }}
                 />
               }
               style={{ marginBottom: 24, border: "black solid 0.5px" }}
@@ -226,7 +283,7 @@ const ProjectDetailPage = () => {
                 currentAmount: project?.["total-amount"] ?? 0,
                 goalAmount: project?.["minimum-amount"] ?? 0,
                 endDate: project?.["end-datetime"],
-                rewards: [],
+                rewards: rewards,
               }}
             />
           </Col>
