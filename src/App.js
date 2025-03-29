@@ -2,7 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import HomePage from "./pages/HomePage";
-import TaskPage from "./pages/TaskPage";
+// import TaskPage from "./pages/TaskPage";
 import LayoutCom from "./components/Layout/LayoutCom";
 import ProjectDetailPage from "./pages/ProjectDetailPage";
 import ProfilePage from "./pages/profilePage";
@@ -20,22 +20,19 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<LayoutCom />}>
-        <Route element={<RequireAuth role={["Admin"]}></RequireAuth>}>
+        <Route element={<RequireAuth roles={["Admin"]}></RequireAuth>}>
           <Route path="/admin/projects" element={<AdminProjectListPage />} />
-          <Route
-            path="/admin/project/:id"
-            element={<AdminProjectDetailPage />}
-          />
+          <Route path="/admin/project/:id" element={<AdminProjectDetailPage />}
+        />
         </Route>
         <Route path="/" element={<HomePage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/project/:id" element={<ProjectDetailPage />} />{" "}
         <Route path="/create-project" element={<CreateProjectForm />} />{" "}
-        <Route element={<RequireAuth role={["Staff"]}></RequireAuth>}></Route>
-        <Route
-          element={<RequireAuth role={["Customer"]}></RequireAuth>}
-        ></Route>
-        <Route path="/task" element={<TaskPage />} />
+        <Route element={<RequireAuth roles={["Staff"]}></RequireAuth>}></Route>
+        <Route element={<RequireAuth roles={["Customer"]}></RequireAuth>}></Route>
+        <Route element={<RequireAuth roles={["Admin"]}></RequireAuth>}></Route>
+        {/* <Route path="/task" element={<TaskPage />} /> */}
         <Route path="/profile/:id" element={<UserProfilePage />} />
         <Route path="/games" element={<GamePage />} />
         <Route path="/game/:id" element={<GameDetailPage />} />

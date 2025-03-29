@@ -37,6 +37,7 @@ const Loginform = () => {
         setTimeout(() => {
           navigate('/');
         }, 1000);
+        console.log(response.data)
       } else {
         setErrorMsg('Không nhận được token từ máy chủ!');
         setSuccessMsg('');

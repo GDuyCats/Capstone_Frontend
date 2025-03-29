@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Layout, Typography, Row, Col, Tabs, Card, Progress, Statistic,Image, Carousel, Spin, Tag, message } from "antd";
-import { useParams } from "react-router-dom";
+import { Layout, Typography, Row, Col, Tabs, Card, Progress, Statistic, Image, Spin, Tag, message } from "antd";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { motion } from "framer-motion";
 import useAuth from "../components/Hooks/useAuth";
-import dayjs from "dayjs";
 import ProjectComments from "../components/ProjectDetailPage/ProjectComments";
 import ProjectUpdates from "../components/ProjectDetailPage/ProjectUpdates";
 
@@ -12,18 +11,28 @@ const { Content } = Layout;
 const { Title, Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
 
-const ProjectDetailPage = () => {
-  const { id } = useParams(); // ✅ Lấy ID từ URL
+const AdminProjectDetailPage = () => {
+  const navigate = useNavigate();
+  const { id } = useParams();
   const { auth } = useAuth();
   const [loading, setLoading] = useState(true);
   const [project, setProject] = useState(null);
+  const [isAuthChecked, setIsAuthChecked] = useState(false); // ✅ Kiểm tra quyền truy cập trước khi gọi API
 
   useEffect(() => {
-    const fetchProjectDetails = async () => {
-      if (!auth?.token) {
-        console.error("❌ Không tìm thấy token!");
+    // ✅ Chặn truy cập nếu chưa kiểm tra quyền
+    if (!isAuthChecked && auth?.role) {
+      setIsAuthChecked(true); // Đánh dấu đã kiểm tra quyền
+      if (auth.role !== "Admin") {
+        message.error("Bạn không có quyền hạn để vào. Vui lòng liên hệ với admin !");
+        navigate("/");
         return;
       }
+    }
+
+    // ✅ Gọi API nếu có quyền Admin
+    const fetchProjectDetails = async () => {
+      if (auth.role !== "Admin") return; // Nếu không phải Admin, không gọi API
 
       try {
         const response = await axios.get(
@@ -51,8 +60,19 @@ const ProjectDetailPage = () => {
     };
 
     fetchProjectDetails();
-  }, [auth, id]);
+  }, [auth, id, navigate, isAuthChecked]);
 
+  // ✅ Nếu chưa kiểm tra quyền, hiển thị loading để tránh màn hình trắng
+  if (!isAuthChecked) {
+    return (
+      <div style={{ textAlign: "center", marginTop: "50px" }}>
+        <Spin size="large" />
+        <p>Đang kiểm tra quyền truy cập...</p>
+      </div>
+    );
+  }
+
+  // ✅ Nếu không có quyền, useEffect sẽ điều hướng trước khi đến đây.
   if (loading) {
     return (
       <div style={{ textAlign: "center", marginTop: "50px" }}>
@@ -62,7 +82,11 @@ const ProjectDetailPage = () => {
   }
 
   if (!project) {
-    return <p style={{ textAlign: "center", fontSize: "18px", color: "red" }}>Dự án không tồn tại hoặc đã bị xoá!</p>;
+    return (
+      <p style={{ textAlign: "center", fontSize: "18px", color: "red" }}>
+        Dự án không tồn tại hoặc đã bị xoá!
+      </p>
+    );
   }
 
   // ✅ Tính số ngày còn lại
@@ -144,4 +168,4 @@ const ProjectDetailPage = () => {
   );
 };
 
-export default ProjectDetailPage;
+export default AdminProjectDetailPage;

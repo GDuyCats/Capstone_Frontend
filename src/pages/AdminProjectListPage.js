@@ -2,23 +2,27 @@ import React, { useEffect, useState } from "react";
 import { Modal } from "antd";
 import { Table, Button, Space, message, Tag, Image } from "antd";
 import { useNavigate } from "react-router-dom";
-import axios from "axios"; 
-import useAuth from "../components/Hooks/useAuth"; 
+import axios from "axios";
+import useAuth from "../components/Hooks/useAuth";
 import dayjs from "dayjs";
 
 const AdminProjectListPage = () => {
-  const { auth } = useAuth(); 
+  const { auth } = useAuth();
   const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true); 
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
+    // if (auth?.role !== "Admin"){
+    //   navigate("/")
+    //   message.error("Bạn không có quyền hạn để vào. Vui lòng liên hệ với admin !");
+    //   return;
+    // }
+    
     const fetchProjects = async () => {
       if (!auth?.token) {
-        console.error("❌ Không tìm thấy token!");
         return;
       }
-
       try {
         const response = await axios.get(
           "https://marvelous-gentleness-production.up.railway.app/api/Project/GetAllProject",
@@ -35,7 +39,7 @@ const AdminProjectListPage = () => {
           setProjects(response.data.data);
         } else {
           console.error("Dữ liệu không hợp lệ:", response.data);
-          setProjects([]); 
+          setProjects([]);
         }
       } catch (error) {
         console.error("Lỗi khi lấy danh sách dự án:", error);
@@ -147,7 +151,7 @@ const AdminProjectListPage = () => {
       dataSource={projects}
       columns={columns}
       rowKey="project-id"
-      loading={loading} 
+      loading={loading}
       pagination={{ pageSize: 10 }}
       style={{ cursor: "pointer" }}
       // ✅ Thêm sự kiện click vào dòng để chuyển trang
