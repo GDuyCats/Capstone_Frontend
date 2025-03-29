@@ -2,7 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import HomePage from "./pages/HomePage";
-// import TaskPage from "./pages/TaskPage";
+import TaskPage from "./pages/TaskPage";
 import LayoutCom from "./components/Layout/LayoutCom";
 import ProjectDetailPage from "./pages/ProjectDetailPage";
 import ProfilePage from "./pages/profilePage";
@@ -13,30 +13,57 @@ import GamePage from "./pages/GamePage";
 import GameDetailPage from "./pages/GameDetailPage";
 import AdminProjectListPage from "./pages/AdminProjectListPage";
 import AdminProjectDetailPage from "./pages/AdminProjectDetailPage";
+import StaffProjectDetailPage from "./pages/StaffProjectDetailPage";
 import CreateProjectForm from "./pages/CreateProjectForm";
 import RequireAuth from "./Context/RequireAuth";
+import InvisibleProjects from "./pages/InvisibleProjectsPage";
+import ApprovedProjects from "./pages/ApprovedProjectPage";
 
 function App() {
   return (
     <Routes>
       <Route path="/" element={<LayoutCom />}>
-        <Route element={<RequireAuth roles={["Admin"]}></RequireAuth>}>
-          <Route path="/admin/projects" element={<AdminProjectListPage />} />
-          <Route path="/admin/project/:id" element={<AdminProjectDetailPage />}
-        />
+        <Route
+          element={
+            <RequireAuth
+              restrictedRoles={["Staff"]}
+              redirectTo="invisible-projects"
+            />
+          }
+        >
+          <Route path="/" element={<HomePage />} />
+          <Route path="/task" element={<TaskPage />} />
+          <Route path="/games" element={<GamePage />} />
+          <Route path="/game/:id" element={<GameDetailPage />} />
+          <Route path="/project/:id" element={<ProjectDetailPage />} />
         </Route>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/project/:id" element={<ProjectDetailPage />} />{" "}
-        <Route path="/create-project" element={<CreateProjectForm />} />{" "}
-        <Route element={<RequireAuth roles={["Staff"]}></RequireAuth>}></Route>
-        <Route element={<RequireAuth roles={["Customer"]}></RequireAuth>}></Route>
-        <Route element={<RequireAuth roles={["Admin"]}></RequireAuth>}></Route>
-        {/* <Route path="/task" element={<TaskPage />} /> */}
-        <Route path="/profile/:id" element={<UserProfilePage />} />
-        <Route path="/games" element={<GamePage />} />
-        <Route path="/game/:id" element={<GameDetailPage />} />
+
+        <Route element={<RequireAuth roles={["Admin"]} />}>
+          <Route path="/admin/projects" element={<AdminProjectListPage />} />
+          <Route
+            path="/admin/project/:id"
+            element={<AdminProjectDetailPage />}
+          />
+        </Route>
+
+        <Route element={<RequireAuth roles={["Staff"]} />}>
+          <Route path="/invisible-projects" element={<InvisibleProjects />} />
+          <Route path="/approved-projects" element={<ApprovedProjects />} />
+          <Route
+            path="/staff/project/:id"
+            element={<StaffProjectDetailPage />}
+          />
+        </Route>
+
+        <Route element={<RequireAuth roles={["Customer"]} />}>
+          <Route path="/create-project" element={<CreateProjectForm />} />
+        </Route>
+        <Route element={<RequireAuth roles={["Admin", "Staff"]} />}></Route>
+        <Route element={<RequireAuth roles={["Admin", "Staff", "Customer"]} />}>
+          <Route path="/profile" element={<ProfilePage />} />
+        </Route>
       </Route>
+
       <Route path="/" element={<LoginLayout />}>
         <Route path="/login" element={<Login />} />
       </Route>

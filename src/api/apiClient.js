@@ -34,7 +34,15 @@ apiAuth.interceptors.request.use(
   },
   (error) => Promise.reject(error)
 );
-
+export const fetchRewardsByProjectId = (id) =>
+  apiAuth.get(`/api/Reward/GetRewardByProjectId?projectId=${id}`);
+export const fetchProjectsAdmin = () =>
+  apiAuth.get("/api/Project/GetAllProjectByMonitor");
+export const staffApproveProject = ({ projectId, status, reason }) => {
+  return apiAuth.put(`/api/Project/StaffApproveProject`, null, {
+    params: { projectId, status, reason },
+  });
+};
 export const fetchProjects = () => apiBase.get("/api/Project/GetAllProject");
 export const fetchProject = (id) =>
   apiBase.get(`/api/Project/GetProjectById?id=${id}`);

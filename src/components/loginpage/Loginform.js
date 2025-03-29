@@ -1,19 +1,18 @@
-
-import axios from 'axios';
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import axios from "axios";
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 
 import useAuth from "../Hooks/useAuth";
-import Otherlogin from './Otherlogin';
-import checked from '../../assets/checked.png';
-import unchecked from '../../assets/unchecked.png';
+import Otherlogin from "./Otherlogin";
+import checked from "../../assets/checked.png";
+import unchecked from "../../assets/unchecked.png";
 
 const Loginform = () => {
-  const { setAuth } = useAuth();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
-  const [errorMsg, setErrorMsg] = useState('');
+  const { auth, setAuth } = useAuth();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
 
   const navigate = useNavigate();
 
@@ -21,7 +20,7 @@ const Loginform = () => {
     e.preventDefault();
     try {
       const response = await axios.post(
-        'https://marvelous-gentleness-production.up.railway.app/api/Authentication/login',
+        "https://marvelous-gentleness-production.up.railway.app/api/Authentication/login",
         {
           username,
           password,
@@ -29,22 +28,27 @@ const Loginform = () => {
       );
 
       const token = response.data?.token;
-      const role = response.data?.role
+      const user = response.data?.user || { username };
+      const role = response.data?.role;
+
       if (token) {
-        setAuth({ token, role });
-        setSuccessMsg(response.data?.message || 'Đăng nhập thành công!');
-        setErrorMsg('');
+        setAuth({ token, user, role });
+        setSuccessMsg(response.data?.message || "Đăng nhập thành công!");
+        setErrorMsg("");
+        console.log("Token:", token);
+        console.log("User:", user);
+        console.log("User:", role);
         setTimeout(() => {
           navigate('/');
         }, 1000);
-        console.log(response.data)
+
       } else {
-        setErrorMsg('Không nhận được token từ máy chủ!');
-        setSuccessMsg('');
+        setErrorMsg("Không nhận được token từ máy chủ!");
+        setSuccessMsg("");
       }
     } catch (err) {
-      setSuccessMsg('');
-      setErrorMsg(err.response?.data?.message || 'Đăng nhập thất bại!');
+      setSuccessMsg("");
+      setErrorMsg(err.response?.data?.message || "Đăng nhập thất bại!");
     }
   };
 
@@ -120,7 +124,9 @@ const Loginform = () => {
                 type="submit"
                 className="flex cursor-pointer hover:scale-105 transition-transform duration-300 rounded-sm justify-center items-center w-auto h-auto py-2 ml-[45px] mr-9 md:ml-14 md:mr-8 bg-gradient-to-r from-blue_steam to-blue_steam_login"
               >
-                <label className="text-white text-xl font-bold">Đăng nhập</label>
+                <label className="text-white text-xl font-bold">
+                  Đăng nhập
+                </label>
               </button>
 
               {/* Success message */}
@@ -129,7 +135,11 @@ const Loginform = () => {
                   <span className="text-xs ml-[10%] text-green-500 font-extrabold">
                     {successMsg}
                   </span>
-                  <img className="w-[15px] h-[15px]" src={checked} alt="success" />
+                  <img
+                    className="w-[15px] h-[15px]"
+                    src={checked}
+                    alt="success"
+                  />
                 </div>
               )}
 
@@ -139,7 +149,11 @@ const Loginform = () => {
                   <span className="text-xs ml-[10%] text-red-500 font-extrabold">
                     {errorMsg}
                   </span>
-                  <img className="w-[15px] h-[15px]" src={unchecked} alt="error" />
+                  <img
+                    className="w-[15px] h-[15px]"
+                    src={unchecked}
+                    alt="error"
+                  />
                 </div>
               )}
 
@@ -170,15 +184,17 @@ const Loginform = () => {
               </h1>
               <div className="bg-gradient-to-r hover:scale-105 transition-transform duration-300 from-blue_steam to-blue_steam_login rounded-sm py-2 mt-5 px-5 ml-3 cursor-pointer">
                 <Link to="/register">
-                  <p className="text-slate-200 text-2xl font-bold">Tạo tài khoản</p>
+                  <p className="text-slate-200 text-2xl font-bold">
+                    Tạo tài khoản
+                  </p>
                 </Link>
               </div>
             </div>
 
             <div className="flex mt-5">
               <h1 className="text-slate-200 text-center">
-                GameMkt phát triển một cộng đồng dành cho trò chơi điện tử, cung cấp một các công cụ và cơ hội phát triển.
-                Xem thêm về&nbsp;
+                GameMkt phát triển một cộng đồng dành cho trò chơi điện tử, cung
+                cấp một các công cụ và cơ hội phát triển. Xem thêm về&nbsp;
                 <Link to="/aboutus">
                   <span className="font-extrabold underline hover:underline hover:scale-105 transition-transform duration-300 inline-block">
                     Chúng tôi
@@ -192,6 +208,5 @@ const Loginform = () => {
     </form>
   );
 };
-
 
 export default Loginform;
