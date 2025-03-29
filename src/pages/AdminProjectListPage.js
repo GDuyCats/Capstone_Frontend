@@ -9,7 +9,7 @@ import dayjs from "dayjs";
 const AdminProjectListPage = () => {
   const { auth } = useAuth(); 
   const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); 
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -48,6 +48,7 @@ const AdminProjectListPage = () => {
     fetchProjects();
   }, [auth, navigate]);
 
+  // 🗑️ Xử lý xóa dự án
   const handleDelete = async (projectId) => {
     Modal.confirm({
       title: "Xác nhận xóa dự án",
@@ -66,14 +67,16 @@ const AdminProjectListPage = () => {
             }
           );
 
-      message.success("✅ Project deleted successfully!");
-      setProjects((prev) =>
-        prev.filter((project) => project["project-id"] !== projectId)
-      );
-    } catch (error) {
-      console.error("❌ Lỗi khi xóa dự án:", error);
-      message.error("Failed to delete project");
-    }
+          message.success("✅ Project deleted successfully!");
+          setProjects((prev) =>
+            prev.filter((project) => project["project-id"] !== projectId)
+          );
+        } catch (error) {
+          console.error("Lỗi khi xóa dự án:", error);
+          message.error("Failed to delete project");
+        }
+      },
+    });
   };
 
   const columns = [
