@@ -12,9 +12,7 @@ import {
   Divider,
   Avatar,
   Result,
-  Tag,
   Spin,
-  List,
 } from "antd";
 import {
   ClockCircleOutlined,
@@ -23,23 +21,29 @@ import {
   ShareAltOutlined,
   BulbOutlined,
   MessageOutlined,
-  DollarOutlined,
 } from "@ant-design/icons";
 import TipTapViewer from "../components/TipTapViewer";
 import placeholder from "../assets/placeholder-1-1-1.png";
 import ProjectSidebar from "../components/ProjectDetailPage/ProjectSidebar";
 import ProjectComments from "../components/ProjectDetailPage/ProjectComments";
 import ProjectUpdates from "../components/ProjectDetailPage/ProjectUpdates";
-import { fetchProject, fetchRewardsByProjectId } from "../api/apiClient";
+import {
+  fetchProject,
+  fetchRewardsByProjectId,
+  fetchCreatorInfo,
+} from "../api/apiClient";
+import { useNavigate } from "react-router-dom";
 
 const { Content } = Layout;
 const { Title, Text, Paragraph } = Typography;
 
 const ProjectDetailPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [project, setProject] = useState(null);
   const [rewards, setRewards] = useState([]);
+  const [creator, setCreator] = useState(null);
   const [activeTab, setActiveTab] = useState("1");
 
   const handleAddUpdate = (updatedUpdates) => {
@@ -55,6 +59,21 @@ const ProjectDetailPage = () => {
         const response = await fetchProject(id);
         if (response.data.success) {
           setProject(response.data.data);
+
+          // Fetch creator info if creator-id exists
+          if (response.data.data["creator-id"]) {
+            try {
+              const creatorResponse = await fetchCreatorInfo(
+                response.data.data["creator-id"]
+              );
+              if (creatorResponse.data.success) {
+                setCreator(creatorResponse.data.data);
+              }
+            } catch (error) {
+              console.error("Error fetching creator info:", error);
+            }
+          }
+
           const rewardsResponse = await fetchRewardsByProjectId(
             response.data.data["project-id"] || id
           );
@@ -74,11 +93,25 @@ const ProjectDetailPage = () => {
     fetchProjectData();
   }, [id]);
 
-  const daysLeft = project
-    ? Math.ceil(
-        (new Date(project["end-datetime"]) - new Date()) / (1000 * 60 * 60 * 24)
-      )
-    : 0;
+  const getTimeStatus = () => {
+    if (!project) return { text: "", days: 0 };
+
+    const now = new Date();
+    const startDate = new Date(project["start-datetime"]);
+    const endDate = new Date(project["end-datetime"]);
+
+    if (now < startDate) {
+      const days = Math.ceil((startDate - now) / (1000 * 60 * 60 * 24));
+      return { text: `Starts in ${days} days`, status: "upcoming" };
+    } else if (now >= startDate && now <= endDate) {
+      const days = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
+      return { text: `${days} days to go`, status: "ongoing" };
+    } else {
+      return { text: "Funding ended", status: "ended" };
+    }
+  };
+
+  const timeStatus = getTimeStatus();
 
   const items = [
     {
@@ -96,20 +129,54 @@ const ProjectDetailPage = () => {
           <Title level={4}>Project Description</Title>
           <Paragraph style={{ fontSize: 16 }}>{project?.description}</Paragraph>
 
-          {project?.creator && (
+          {(creator || project?.creator) && (
             <>
               <Divider />
               <Title level={4}>About the Creator</Title>
-              <Row gutter={16} align="middle">
-                <Col>
-                  <Avatar size={64} icon={<UserOutlined />} />
-                </Col>
-                <Col flex="auto">
-                  <Title level={5} style={{ marginBottom: 4 }}>
-                    {project.creator}
-                  </Title>
-                </Col>
-              </Row>
+              <Card
+                bordered={false}
+                style={{ background: "#f9f9f9", cursor: "pointer" }}
+                onClick={() =>
+                  navigate(
+                    `/creator/${
+                      creator?.["user-id"] || project?.["creator-id"]
+                    }`,
+                    {
+                      state: { from: `/project/${id}` },
+                    }
+                  )
+                }
+              >
+                <Row gutter={16} align="middle">
+                  <Col>
+                    <Avatar
+                      size={64}
+                      src={creator?.avatar}
+                      icon={<UserOutlined />}
+                      style={{ backgroundColor: "#1890ff" }}
+                    />
+                  </Col>
+                  <Col flex="auto">
+                    <Title level={5} style={{ marginBottom: 0 }}>
+                      {creator?.["full-name"] || project?.creator}
+                    </Title>
+                    {creator?.bio && (
+                      <Paragraph
+                        style={{ marginTop: 8, marginBottom: 0 }}
+                        ellipsis={{ rows: 2 }}
+                      >
+                        {creator.bio}
+                      </Paragraph>
+                    )}
+                    <Text
+                      type="secondary"
+                      style={{ display: "block", marginTop: 8 }}
+                    >
+                      View full profile →
+                    </Text>
+                  </Col>
+                </Row>
+              </Card>
             </>
           )}
         </div>
@@ -205,15 +272,20 @@ const ProjectDetailPage = () => {
                 </div>
 
                 <Space split={<Divider type="vertical" />}>
-                  {project.creator && (
+                  {(creator || project?.creator) && (
                     <Space>
-                      <Avatar size="small" icon={<UserOutlined />} />
-                      <Text strong>{project.creator}</Text>
+                      <Avatar
+                        size="small"
+                        icon={<UserOutlined />}
+                        src={creator?.avatar}
+                      />
+                      <Text strong>
+                        {creator?.["full-name"] || project?.creator}
+                      </Text>
                     </Space>
                   )}
                   <Text>
-                    <ClockCircleOutlined />{" "}
-                    {daysLeft > 0 ? `${daysLeft} days to go` : "Funding ended"}
+                    <ClockCircleOutlined /> {timeStatus.text}
                   </Text>
                   <Text>
                     <UserOutlined /> {project?.backers} backers
@@ -244,6 +316,7 @@ const ProjectDetailPage = () => {
                 currentAmount: project?.["total-amount"] ?? 0,
                 goalAmount: project?.["minimum-amount"] ?? 0,
                 endDate: project?.["end-datetime"],
+                timeStatus: timeStatus.status,
               }}
               rewards={rewards}
             />

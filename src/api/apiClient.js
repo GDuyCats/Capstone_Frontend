@@ -34,6 +34,8 @@ apiAuth.interceptors.request.use(
   },
   (error) => Promise.reject(error)
 );
+export const fetchCreatorInfo = (userId) =>
+  apiAuth.get(`/api/User/GetUserById?userId=${userId}`);
 export const fetchRewardsByProjectId = (id) =>
   apiAuth.get(`/api/Reward/GetRewardByProjectId?projectId=${id}`);
 export const fetchProjectsAdmin = () =>
@@ -91,6 +93,45 @@ export const updateStory = (projectId, story) => {
     null
   );
 };
+
+export const addReward = (data) => apiAuth.post("/api/Reward/AddReward", data);
+
+export const updateReward = (rewardId, data) => {
+  const formData = new FormData();
+  formData.append("Amount", data.amount);
+  formData.append("Details", data.details);
+  formData.append("CreatedDatetime", data["created-datetime"]);
+  return apiAuth.put(
+    `/api/Reward/UpdateReward?rewardId=${rewardId}`,
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+};
+export const deleteReward = (rewardId) =>
+  apiAuth.delete(`/api/Reward/DeleteReward?rewardId=${rewardId}`);
+export const uploadFile = (file) => {
+  const formData = new FormData();
+  formData.append("formFiles", file);
+
+  return apiAuth.post("/api/File", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
+export const deleteFile = (fileId) =>
+  apiAuth.delete(`/api/File/Remove?fileId=${fileId}`);
+
+export const getUserFiles = (userId, page = 1, pageSize = 20) =>
+  apiAuth.get(
+    `/api/File/files/user/paging/${userId}?page=${page}&pageSize=${pageSize}`
+  );
+
+export const getFileById = (fileId) => apiAuth.get(`/api/File/file/${fileId}`);
 
 // export const fetchProjects = () => apiClient1.get("/game");
 export const fetchProjectDetails = (id) => apiClient1.get(`/game/${id}`);

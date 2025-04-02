@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchUserProjects, deleteProject } from "../api/apiClient";
 import { Button, Table, Modal, message, Space } from "antd";
+import placeholder from "../assets/placeholder-1-1-1.png";
+import RewardList from "../components/MyProjectListPage/RewardList";
 import {
   EditOutlined,
   DeleteOutlined,
@@ -59,6 +61,27 @@ const MyProjectList = () => {
 
   const columns = [
     {
+      title: "Thumbnail",
+      dataIndex: "thumbnail",
+      key: "thumbnail",
+      render: (thumbnail) => (
+        <img
+          src={
+            !thumbnail || thumbnail === "Null" || thumbnail.trim() === ""
+              ? placeholder
+              : thumbnail
+          }
+          alt="Thumbnail"
+          style={{
+            width: 200,
+            height: 100,
+            objectFit: "cover",
+            borderRadius: 5,
+          }}
+        />
+      ),
+    },
+    {
       title: "Title",
       dataIndex: "title",
       key: "title",
@@ -88,7 +111,7 @@ const MyProjectList = () => {
       title: "Total Amount",
       dataIndex: "total-amount",
       key: "total-amount",
-      render: (amount) => `$${amount.toLocaleString()}`,
+      render: (amount) => `${amount.toLocaleString()}đ`,
     },
     {
       title: "Actions",
@@ -122,6 +145,9 @@ const MyProjectList = () => {
         dataSource={projects}
         rowKey="project-id"
         loading={loading}
+        expandedRowRender={(record) => (
+          <RewardList projectId={record["project-id"]} />
+        )}
       />
     </div>
   );

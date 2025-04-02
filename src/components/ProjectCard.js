@@ -5,9 +5,25 @@ import placeholder from "../assets/placeholder-1-1-1.png";
 const { Title, Text } = Typography;
 
 const ProjectCard = ({ project }) => {
-  const daysLeft = Math.ceil(
-    (new Date(project["end-datetime"]) - new Date()) / (1000 * 60 * 60 * 24)
-  );
+  const now = new Date();
+  const startDate = new Date(project["start-datetime"]);
+  const endDate = new Date(project["end-datetime"]);
+
+  let statusText;
+  let daysValue;
+
+  if (now < startDate) {
+    const daysUntilStart = Math.ceil((startDate - now) / (1000 * 60 * 60 * 24));
+    statusText = "Starts in";
+    daysValue = daysUntilStart;
+  } else if (now >= startDate && now <= endDate) {
+    const daysRemaining = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
+    statusText = "Days to go";
+    daysValue = daysRemaining;
+  } else {
+    statusText = "Ended";
+    daysValue = 0;
+  }
   const progressPercentage =
     (project["total-amount"] / project["minimum-amount"]) * 100;
 
@@ -68,8 +84,8 @@ const ProjectCard = ({ project }) => {
           <Text type="secondary">backers</Text>
         </Col>
         <Col span={8}>
-          <Title level={4}>{daysLeft}</Title>
-          <Text type="secondary">days to go</Text>
+          <Title level={4}>{daysValue}</Title>
+          <Text type="secondary">{statusText}</Text>
         </Col>
       </Row>
 

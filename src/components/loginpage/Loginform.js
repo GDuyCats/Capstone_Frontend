@@ -30,18 +30,17 @@ const Loginform = () => {
       const token = response.data?.token;
       const user = response.data?.user || { username };
       const role = response.data?.role;
-
+      const id = response.data?.hint;
       if (token) {
-        setAuth({ token, user, role });
+        setAuth({ token, user, role, id });
         setSuccessMsg(response.data?.message || "Đăng nhập thành công!");
         setErrorMsg("");
         console.log("Token:", token);
         console.log("User:", user);
         console.log("User:", role);
         setTimeout(() => {
-          navigate('/');
+          navigate("/");
         }, 1000);
-
       } else {
         setErrorMsg("Không nhận được token từ máy chủ!");
         setSuccessMsg("");

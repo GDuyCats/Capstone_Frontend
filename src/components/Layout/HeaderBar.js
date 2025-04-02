@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, createContext, useContext } from "react";
 import {
   Layout,
@@ -9,15 +8,15 @@ import {
   message,
   Typography,
   Space,
-  
 } from "antd";
 import {
   UserOutlined,
   SearchOutlined,
   ProjectOutlined,
+  FileOutlined,
 } from "@ant-design/icons";
 
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import useAuth from "../Hooks/useAuth";
 import AvatarContext from "antd/es/avatar/AvatarContext";
@@ -27,8 +26,10 @@ const { Text } = Typography;
 
 const HeaderBar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { auth, setAuth } = useAuth();
   const [avatarUrl, setAvatarUrl] = useState(null);
+  const [hoveredItem, setHoveredItem] = useState(null);
 
   useEffect(() => {
     const fetchUserAvatar = async () => {
@@ -54,7 +55,6 @@ const HeaderBar = () => {
       fetchUserAvatar();
     }
   }, [auth]);
-
 
   const handleLogout = () => {
     setAuth(null);
@@ -82,6 +82,27 @@ const HeaderBar = () => {
     </Menu>
   );
 
+  const navItems = [
+    {
+      key: "projects",
+      icon: <ProjectOutlined />,
+      label: "My Projects",
+      path: "/my-projects",
+      roles: ["CUSTOMER"],
+    },
+    {
+      key: "files",
+      icon: <FileOutlined />,
+      label: "My Files",
+      path: "/files",
+      roles: ["CUSTOMER"],
+    },
+  ];
+
+  const isActive = (path) => {
+    return location.pathname === path;
+  };
+
   return (
     <AvatarContext.Provider value={{ avatarUrl, setAvatarUrl }}>
       <Header
@@ -106,36 +127,104 @@ const HeaderBar = () => {
               fontWeight: "bold",
               marginRight: "24px",
               textDecoration: "none",
+              position: "relative",
+              padding: "0 4px",
             }}
+            onMouseEnter={() => setHoveredItem("home")}
+            onMouseLeave={() => setHoveredItem(null)}
           >
             Project Dashboard
+            {hoveredItem === "home" && (
+              <div
+                style={{
+                  position: "absolute",
+                  bottom: -4,
+                  left: 0,
+                  width: "100%",
+                  height: "2px",
+                  background: "#1890ff",
+                  transition: "width 0.3s ease",
+                  animation: "slideIn 0.3s ease",
+                }}
+              />
+            )}
           </Link>
 
           {auth && (
-            <Link
-              to="/my-projects"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                color: "rgba(255, 255, 255, 0.85)",
-                transition: "color 0.3s",
-                textDecoration: "none",
-                ":hover": {
-                  color: "#fff",
-                },
-              }}
-            >
-              <ProjectOutlined
-                style={{
-                  fontSize: "18px",
-                  marginRight: "8px",
-                }}
-              />
-              <Text style={{ color: "inherit" }}>My Projects</Text>
-            </Link>
+            <Space size="middle">
+              {navItems.map((item) => {
+                if (item.roles && !item.roles.includes(auth.role)) {
+                  return null;
+                }
+                const active = isActive(item.path);
+                const hovered = hoveredItem === item.key;
+
+                return (
+                  <Link
+                    key={item.key}
+                    to={item.path}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      color:
+                        active || hovered
+                          ? "#1890ff"
+                          : "rgba(255, 255, 255, 0.85)",
+                      transition: "color 0.3s",
+                      textDecoration: "none",
+                      padding: "8px 12px",
+                      borderRadius: "4px",
+                      background: active
+                        ? "rgba(24, 144, 255, 0.1)"
+                        : hovered
+                        ? "rgba(255, 255, 255, 0.05)"
+                        : "transparent",
+                      position: "relative",
+                      overflow: "hidden",
+                    }}
+                    onMouseEnter={() => setHoveredItem(item.key)}
+                    onMouseLeave={() => setHoveredItem(null)}
+                  >
+                    {React.cloneElement(item.icon, {
+                      style: {
+                        fontSize: "18px",
+                        marginRight: "8px",
+                        transition: "transform 0.3s",
+                        transform: hovered ? "scale(1.2)" : "scale(1)",
+                      },
+                    })}
+                    <Text
+                      style={{
+                        color: "inherit",
+                        transition: "transform 0.3s",
+                        transform: hovered
+                          ? "translateX(2px)"
+                          : "translateX(0)",
+                      }}
+                    >
+                      {item.label}
+                    </Text>
+
+                    {(active || hovered) && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          bottom: 0,
+                          left: 0,
+                          width: "100%",
+                          height: "2px",
+                          background: "#1890ff",
+                          transition: "width 0.3s ease",
+                          animation: "slideIn 0.3s ease",
+                        }}
+                      />
+                    )}
+                  </Link>
+                );
+              })}
+            </Space>
           )}
         </div>
-
         <Space size="middle">
           <Input
             placeholder="Search projects..."
@@ -150,20 +239,37 @@ const HeaderBar = () => {
           />
 
           <Dropdown overlay={userMenu} placement="bottomRight" arrow>
-            <Space style={{ cursor: "pointer", padding: "8px" }}>
+            <Space
+              style={{
+                cursor: "pointer",
+                padding: "8px",
+                transition: "background-color 0.3s",
+                borderRadius: "4px",
+                ":hover": {
+                  backgroundColor: "rgba(255, 255, 255, 0.1)",
+                },
+              }}
+              onMouseEnter={() => setHoveredItem("user")}
+              onMouseLeave={() => setHoveredItem(null)}
+              className="user-dropdown"
+            >
               <Avatar
                 src={avatarUrl}
                 icon={!avatarUrl && <UserOutlined />}
                 style={{
                   backgroundColor: avatarUrl ? "transparent" : "#1890ff",
-                  transition: "transform 0.3s",
-                  ":hover": {
-                    transform: "scale(1.1)",
-                  },
+                  transition: "all 0.3s",
+                  transform: hoveredItem === "user" ? "scale(1.1)" : "scale(1)",
                 }}
               />
               {auth && (
-                <Text style={{ color: "#fff" }}>
+                <Text
+                  style={{
+                    color: "#fff",
+                    transition: "opacity 0.3s",
+                    opacity: hoveredItem === "user" ? 1 : 0.85,
+                  }}
+                >
                   {auth.userName || "My Account"}
                 </Text>
               )}
@@ -171,8 +277,23 @@ const HeaderBar = () => {
           </Dropdown>
         </Space>
       </Header>
-    </AvatarContext.Provider>
+      <style jsx>{`
+        @keyframes slideIn {
+          from {
+            width: 0;
+            left: 50%;
+          }
+          to {
+            width: 100%;
+            left: 0;
+          }
+        }
 
+        .user-dropdown:hover {
+          background-color: rgba(255, 255, 255, 0.1);
+        }
+      `}</style>
+    </AvatarContext.Provider>
   );
 };
 

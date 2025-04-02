@@ -9,11 +9,9 @@ const RequireAuth = ({ roles, restrictedRoles, redirectTo }) => {
   }
 
   if (roles && !roles.includes(auth.role)) {
-
     return <Navigate to="/" replace />;
   }
 
-  // Nếu user thuộc restrictedRoles, chuyển hướng về redirectTo
   if (auth && restrictedRoles && restrictedRoles.includes(auth.role)) {
     return <Navigate to={redirectTo || "/"} replace />;
   }

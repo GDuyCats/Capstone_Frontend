@@ -20,6 +20,8 @@ import InvisibleProjects from "./pages/InvisibleProjectsPage";
 import ApprovedProjects from "./pages/ApprovedProjectPage";
 import MyProjectList from "./pages/MyProjectListPage";
 import UserEditProject from "./pages/UserEditProject";
+import FileManagerPage from "./pages/FileManagerPage";
+import CreatorProfilePage from "./pages/CreatorProfilePage";
 
 function App() {
   return (
@@ -27,38 +29,51 @@ function App() {
       <Route path="/" element={<LayoutCom />}>
         {/* 🔥 Đảm bảo Staff không thể truy cập một số trang nhất định */}
         <Route
-          element={<RequireAuth restrictedRoles={["Staff"]} redirectTo="invisible-projects" />}
+          element={
+            <RequireAuth
+              restrictedRoles={["STAFF"]}
+              redirectTo="invisible-projects"
+            />
+          }
         >
           <Route index element={<HomePage />} />
           <Route path="task" element={<TaskPage />} />
           <Route path="games" element={<GamePage />} />
+          <Route path="/creator/:id" element={<CreatorProfilePage />} />
           <Route path="game/:id" element={<GameDetailPage />} />
           <Route path="project/:id" element={<ProjectDetailPage />} />
         </Route>
 
         {/* 🔐 Admin routes */}
-        <Route element={<RequireAuth roles={["Admin"]} />}>
+        <Route element={<RequireAuth roles={["ADMIN"]} />}>
           <Route path="admin/projects" element={<AdminProjectListPage />} />
-          <Route path="admin/project/:id" element={<AdminProjectDetailPage />} />
+          <Route
+            path="admin/project/:id"
+            element={<AdminProjectDetailPage />}
+          />
         </Route>
 
         {/* 🔐 Staff routes */}
-        <Route element={<RequireAuth roles={["Staff"]} />}>
+        <Route element={<RequireAuth roles={["STAFF"]} />}>
           <Route path="invisible-projects" element={<InvisibleProjects />} />
           <Route path="approved-projects" element={<ApprovedProjects />} />
-          <Route path="staff/project/:id" element={<StaffProjectDetailPage />} />
+          <Route
+            path="staff/project/:id"
+            element={<StaffProjectDetailPage />}
+          />
         </Route>
 
         {/* 🔐 Customer routes */}
-        <Route element={<RequireAuth roles={["Customer"]} />}>
+        <Route element={<RequireAuth roles={["CUSTOMER"]} />}>
           <Route path="create-project" element={<CreateProjectForm />} />
           <Route path="my-projects" element={<MyProjectList />} />
           <Route path="edit-project/:projectId" element={<UserEditProject />} />
         </Route>
 
         {/* 🔐 Các role chung */}
-        <Route element={<RequireAuth roles={["Admin", "Staff", "Customer"]} />}>
+        <Route element={<RequireAuth roles={["ADMIN", "STAFF", "CUSTOMER"]} />}>
           <Route path="profile" element={<ProfilePage />} />
+          <Route path="files" element={<FileManagerPage />} />
         </Route>
 
         {/* ✅ Profile không giới hạn quyền */}
