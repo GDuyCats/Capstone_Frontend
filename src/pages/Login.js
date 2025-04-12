@@ -1,7 +1,7 @@
 import React from "react";
 import { Layout } from "antd";
 import LoginForm from "../components/loginpage/Loginform";
-import background from "../assets/maxresdefault.jpg";
+import background from "../assets/backbround.avif";
 const { Content } = Layout;
 
 function Login() {

@@ -103,7 +103,7 @@ const RewardList = ({ projectId }) => {
       title: "Amount",
       dataIndex: "amount",
       key: "amount",
-      render: (amount) => `${amount}đ`,
+      render: (amount) => `${amount}$`,
     },
     {
       title: "Details",

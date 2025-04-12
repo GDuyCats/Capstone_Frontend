@@ -8,6 +8,7 @@ import {
   EyeInvisibleOutlined,
   CheckCircleOutlined,
   ProjectOutlined,
+  TeamOutlined,
 } from "@ant-design/icons";
 
 const Sidebar = () => {
@@ -49,6 +50,13 @@ const Sidebar = () => {
         path: "/create-project",
         icon: <PlusCircleOutlined />,
         description: "Start a new project",
+      },
+      {
+        key: "17",
+        label: "Manage collaborators",
+        path: "/manage-collaborators",
+        icon: <TeamOutlined />,
+        description: "Manage your collaborators",
       },
     ],
   };

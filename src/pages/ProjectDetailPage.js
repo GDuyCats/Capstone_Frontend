@@ -13,6 +13,7 @@ import {
   Avatar,
   Result,
   Spin,
+  Tag,
 } from "antd";
 import {
   ClockCircleOutlined,
@@ -21,30 +22,36 @@ import {
   ShareAltOutlined,
   BulbOutlined,
   MessageOutlined,
+  QuestionCircleOutlined,
 } from "@ant-design/icons";
 import TipTapViewer from "../components/TipTapViewer";
 import placeholder from "../assets/placeholder-1-1-1.png";
 import ProjectSidebar from "../components/ProjectDetailPage/ProjectSidebar";
 import ProjectComments from "../components/ProjectDetailPage/ProjectComments";
 import ProjectUpdates from "../components/ProjectDetailPage/ProjectUpdates";
+import ProjectFaqs from "../components/ProjectDetailPage/ProjectFaqs"; // Import the FAQs component
 import {
   fetchProject,
   fetchRewardsByProjectId,
   fetchCreatorInfo,
+  fetchProjectCategories,
 } from "../api/apiClient";
 import { useNavigate } from "react-router-dom";
-
+import useAuth from "../components/Hooks/useAuth";
 const { Content } = Layout;
 const { Title, Text, Paragraph } = Typography;
 
 const ProjectDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { auth } = useAuth();
   const [loading, setLoading] = useState(true);
   const [project, setProject] = useState(null);
   const [rewards, setRewards] = useState([]);
   const [creator, setCreator] = useState(null);
+  const [categories, setCategories] = useState([]);
   const [activeTab, setActiveTab] = useState("1");
+  const [isCreator, setIsCreator] = useState(false); // To check if current user is the creator
 
   const handleAddUpdate = (updatedUpdates) => {
     setProject((prevProject) => ({
@@ -59,8 +66,12 @@ const ProjectDetailPage = () => {
         const response = await fetchProject(id);
         if (response.data.success) {
           setProject(response.data.data);
-
-          // Fetch creator info if creator-id exists
+          const categoriesResponse = await fetchProjectCategories(
+            response.data.data["project-id"] || id
+          );
+          if (categoriesResponse.data.success) {
+            setCategories(categoriesResponse.data.data || []);
+          }
           if (response.data.data["creator-id"]) {
             try {
               const creatorResponse = await fetchCreatorInfo(
@@ -68,6 +79,9 @@ const ProjectDetailPage = () => {
               );
               if (creatorResponse.data.success) {
                 setCreator(creatorResponse.data.data);
+                if (auth.id === response.data.data["creator-id"]) {
+                  setIsCreator(true);
+                }
               }
             } catch (error) {
               console.error("Error fetching creator info:", error);
@@ -195,6 +209,15 @@ const ProjectDetailPage = () => {
       key: "3",
       label: (
         <span>
+          <QuestionCircleOutlined /> FAQs
+        </span>
+      ),
+      children: <ProjectFaqs isCreator={isCreator} />,
+    },
+    {
+      key: "4",
+      label: (
+        <span>
           <MessageOutlined /> Comments
         </span>
       ),
@@ -242,7 +265,7 @@ const ProjectDetailPage = () => {
               cover={
                 <img
                   src={
-                    !project.thumbnail || project.thumbnail === "Null"
+                    !project.thumbnail || project.thumbnail === "unknown"
                       ? placeholder
                       : project.thumbnail
                   }
@@ -269,6 +292,19 @@ const ProjectDetailPage = () => {
                   <Paragraph style={{ fontSize: 16 }}>
                     {project.description}
                   </Paragraph>
+                  {categories.length > 0 && (
+                    <div style={{ marginTop: 8 }}>
+                      {categories.map((category) => (
+                        <Tag
+                          key={category["category-id"]}
+                          color="blue"
+                          style={{ marginRight: 8, marginBottom: 8 }}
+                        >
+                          {category.name}
+                        </Tag>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <Space split={<Divider type="vertical" />}>
@@ -291,11 +327,11 @@ const ProjectDetailPage = () => {
                     <UserOutlined /> {project?.backers} backers
                   </Text>
                 </Space>
-
+                {/* 
                 <Space style={{ width: "100%", justifyContent: "flex-end" }}>
                   <Button icon={<HeartOutlined />}>Favorite</Button>
                   <Button icon={<ShareAltOutlined />}>Share</Button>
-                </Space>
+                </Space> */}
               </Space>
             </Card>
 

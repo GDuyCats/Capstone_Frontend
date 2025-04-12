@@ -34,8 +34,18 @@ apiAuth.interceptors.request.use(
   },
   (error) => Promise.reject(error)
 );
+export const createPaypalPayment = (projectId, amount) => {
+  return apiAuth.post(
+    `/api/PaypalPayment/create?projectId=${projectId}&amount=${amount}`
+  );
+};
+export const executePaypalPayment = (paymentId, token, payerId) => {
+  return apiAuth.get(`/api/PaypalPayment/execute`, {
+    params: { paymentId, token, PayerID: payerId },
+  });
+};
 export const fetchCreatorInfo = (userId) =>
-  apiAuth.get(`/api/User/GetUserById?userId=${userId}`);
+  apiBase.get(`/api/User/GetUserByUserId?userId=${userId}`);
 export const fetchRewardsByProjectId = (id) =>
   apiAuth.get(`/api/Reward/GetRewardByProjectId?projectId=${id}`);
 export const fetchProjectsAdmin = () =>
@@ -56,9 +66,10 @@ export const createProject = (data) => {
   const formData = new FormData();
   formData.append("Title", data.Title);
   formData.append("Description", data.Description);
-  formData.append("MinimumAmount", data.MinimumAmount);
+  formData.append("MinimumAmount", Number(data.MinimumAmount || 0).toString());
   formData.append("StartDatetime", data.StartDatetime);
   formData.append("EndDatetime", data.EndDatetime);
+
   return apiAuth.post("/api/Project/CreateProject", formData, {
     headers: {
       "Content-Type": "multipart/form-data",
@@ -69,8 +80,20 @@ export const registerUser = (data) =>
   apiBase.post("/api/Authentication/register", data);
 export const login = (data) => apiBase.post("/api/Authentication/login", data);
 export const getComment = (data) => apiBase.get("/api/Comment", data);
-export const updateProject = (id, data) =>
-  apiAuth.post(`/api/Project/UpdateProject?projectId=${id}`, data);
+export const updateProject = (id, data) => {
+  const formData = new FormData();
+  formData.append("Name", data.Name);
+  formData.append("MinimumAmount", data.MinimumAmount);
+  formData.append("Description", data.Description);
+  formData.append("StartDatetime", data.StartDatetime);
+  formData.append("EndDatetime", data.EndDatetime);
+
+  return apiAuth.put(`/api/Project/UpdateProject?projectId=${id}`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
 export const updateThumbnail = (projectId, file) => {
   const formData = new FormData();
   formData.append("file", file);
@@ -132,36 +155,94 @@ export const getUserFiles = (userId, page = 1, pageSize = 20) =>
   );
 
 export const getFileById = (fileId) => apiAuth.get(`/api/File/file/${fileId}`);
+export const fetchAllCategories = () =>
+  apiAuth.get("/api/Category/GetAllCategory");
 
-// export const fetchProjects = () => apiClient1.get("/game");
-export const fetchProjectDetails = (id) => apiClient1.get(`/game/${id}`);
+export const addCategoryToProject = (projectId, categoryId) => {
+  const formData = new FormData();
+  formData.append("ProjectId", projectId);
+  formData.append("CategoryId", categoryId);
 
-export const fetchGames = () => apiClient.get("/projects");
-export const fetchGameDetails = (id) => apiClient.get(`/projects/${id}`); // Add a new board to a project
-export const addBoardToProject = (projectId, boardData) =>
-  apiClient.post(`/projects/${projectId}/boards`, boardData);
+  return apiAuth.post("/api/Project/AddCategoryToProject", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
 
-// Add a new card to a board
-export const addCardToBoard = (projectId, boardId, cardData) =>
-  apiClient.post(`/projects/${projectId}/boards/${boardId}/cards`, cardData);
+export const fetchProjectCategories = (projectId) =>
+  apiAuth.get(`/api/Category/GetAllCategoryByProjectId?projecId=${projectId}`);
 
-// Add a member to a card
-export const addMemberToCard = (projectId, boardId, cardId, memberId) =>
-  apiClient.post(
-    `/projects/${projectId}/boards/${boardId}/cards/${cardId}/members`,
-    { memberId }
+export const removeCategoryFromProject = (projectId, categoryId) =>
+  apiAuth.delete(
+    `/api/Category/DeleteCategoryFromProject?projectId=${projectId}&categoryId=${categoryId}`
+  );
+export const fetchPledgesByUserId = () => {
+  return apiAuth.get("/api/Pledge/GetPledgeByUserId");
+};
+// FAQ APIs
+export const addFaq = (projectId, question, answer) => {
+  const formData = new FormData();
+  formData.append("Question", question);
+  formData.append("Answer", answer);
+
+  return apiAuth.post(`/api/Faq/AddFaq?projectId=${projectId}`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
+
+export const getFaqsByProjectId = (projectId) =>
+  apiAuth.get(`/api/Faq/GetFaqByProjectId?projectId=${projectId}`);
+
+export const updateFaq = (projectId, oldQuestion, newQuestion, answer) => {
+  const formData = new FormData();
+  formData.append("Question", newQuestion);
+  formData.append("Answer", answer);
+
+  return apiAuth.put(
+    `/api/Faq/UpdateFaq?projectId=${projectId}&question=${encodeURIComponent(
+      oldQuestion
+    )}`,
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+};
+
+export const deleteFaq = (projectId, question) =>
+  apiAuth.delete(
+    `/api/Faq/DeleteFaq?projectId=${projectId}&question=${encodeURIComponent(
+      question
+    )}`
   );
 
-// Add an attachment to a card
-export const addAttachmentToCard = (
-  projectId,
-  boardId,
-  cardId,
-  attachmentData
-) =>
-  apiClient.post(
-    `/projects/${projectId}/boards/${boardId}/cards/${cardId}/attachments`,
-    attachmentData
-  );
+export const createCollaborator = (email, projectId, role) => {
+  const formData = new FormData();
+  formData.append("Email", email);
+  formData.append("ProjectId", projectId);
+  formData.append("Role", role);
 
+  return apiAuth.post("/api/Collaborator/CreateCollaboratorByEmail", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
+
+// Get collaborators for a project
+export const getProjectCollaborators = (projectId) => {
+  return apiAuth.get(`/api/Collaborator/project?projectId=${projectId}`);
+};
+
+// Remove collaborator from project
+export const removeCollaborator = (userId, projectId) => {
+  return apiAuth.delete(
+    `/api/Collaborator?userId=${userId}&projectId=${projectId}`
+  );
+};
 export default apiClient;

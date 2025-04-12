@@ -9,8 +9,6 @@ import ProfilePage from "./pages/profilePage";
 import UserProfilePage from "./pages/UserProfilePage";
 import LoginLayout from "./components/Layout/loginlayout/LoginLayout";
 import RegisterLayout from "./components/Layout/registerlayout/RegisterLayout";
-import GamePage from "./pages/GamePage";
-import GameDetailPage from "./pages/GameDetailPage";
 import AdminProjectListPage from "./pages/AdminProjectListPage";
 import AdminProjectDetailPage from "./pages/AdminProjectDetailPage";
 import StaffProjectDetailPage from "./pages/StaffProjectDetailPage";
@@ -22,12 +20,17 @@ import MyProjectList from "./pages/MyProjectListPage";
 import UserEditProject from "./pages/UserEditProject";
 import FileManagerPage from "./pages/FileManagerPage";
 import CreatorProfilePage from "./pages/CreatorProfilePage";
+import PaymentResult from "./pages/PaymentResult";
+import PledgesPage from "./pages/PledgesPage";
+import FaqManagementPage from "./pages/FaqManagementPage";
+import CollaboratorManagementPage from "./pages/CollaboratorManagementPage";
 
 function App() {
   return (
     <Routes>
       <Route path="/" element={<LayoutCom />}>
         {/* 🔥 Đảm bảo Staff không thể truy cập một số trang nhất định */}
+        <Route path="/payment/result" element={<PaymentResult />} />
         <Route
           element={
             <RequireAuth
@@ -37,10 +40,7 @@ function App() {
           }
         >
           <Route index element={<HomePage />} />
-          <Route path="task" element={<TaskPage />} />
-          <Route path="games" element={<GamePage />} />
           <Route path="/creator/:id" element={<CreatorProfilePage />} />
-          <Route path="game/:id" element={<GameDetailPage />} />
           <Route path="project/:id" element={<ProjectDetailPage />} />
         </Route>
 
@@ -67,7 +67,17 @@ function App() {
         <Route element={<RequireAuth roles={["CUSTOMER"]} />}>
           <Route path="create-project" element={<CreateProjectForm />} />
           <Route path="my-projects" element={<MyProjectList />} />
+          <Route path="manage-faqs" element={<FaqManagementPage />} />
           <Route path="edit-project/:projectId" element={<UserEditProject />} />
+          <Route path="/pledges" element={<PledgesPage />} />
+          <Route
+            path="manage-collaborators"
+            element={<CollaboratorManagementPage />}
+          />
+          <Route
+            path="manage-collaborators/:projectId"
+            element={<CollaboratorManagementPage />}
+          />
         </Route>
 
         {/* 🔐 Các role chung */}

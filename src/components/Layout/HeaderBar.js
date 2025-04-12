@@ -14,7 +14,10 @@ import {
   SearchOutlined,
   ProjectOutlined,
   FileOutlined,
+  DollarOutlined,
+  QuestionCircleOutlined,
 } from "@ant-design/icons";
+import Logo from "../../assets/logo.png";
 
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
@@ -91,6 +94,20 @@ const HeaderBar = () => {
       roles: ["CUSTOMER"],
     },
     {
+      key: "pledges",
+      icon: <DollarOutlined />,
+      label: "My Pledges",
+      path: "/pledges",
+      roles: ["CUSTOMER"],
+    },
+    {
+      key: "FAQ",
+      icon: <QuestionCircleOutlined />,
+      label: "FAQ Management",
+      path: "/manage-faqs",
+      roles: ["CUSTOMER"],
+    },
+    {
       key: "files",
       icon: <FileOutlined />,
       label: "My Files",
@@ -133,7 +150,16 @@ const HeaderBar = () => {
             onMouseEnter={() => setHoveredItem("home")}
             onMouseLeave={() => setHoveredItem(null)}
           >
-            Project Dashboard
+            <img
+              src={Logo}
+              alt="Logo"
+              style={{
+                height: "150px",
+                marginRight: "8px",
+                transition: "transform 0.3s",
+                transform: hoveredItem === "home" ? "scale(1.05)" : "scale(1)",
+              }}
+            />{" "}
             {hoveredItem === "home" && (
               <div
                 style={{

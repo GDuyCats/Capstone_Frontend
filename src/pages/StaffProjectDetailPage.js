@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { fetchProject, fetchRewardsByProjectId } from "../api/apiClient";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   Layout,
   Typography,
@@ -8,27 +7,55 @@ import {
   Col,
   Tabs,
   Card,
-  Spin,
+  Button,
+  Space,
   Divider,
+  Avatar,
   Tag,
+  Spin,
+  Modal,
+  message,
+  Progress,
+  List,
+  Input,
+  Result,
 } from "antd";
-import { motion } from "framer-motion";
-import { UserOutlined } from "@ant-design/icons";
+import {
+  UserOutlined,
+  ClockCircleOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  ExclamationCircleOutlined,
+  DollarOutlined,
+  TeamOutlined,
+  CalendarOutlined,
+} from "@ant-design/icons";
 import TipTapViewer from "../components/TipTapViewer";
 import ProjectComments from "../components/ProjectDetailPage/ProjectComments";
 import ProjectUpdates from "../components/ProjectDetailPage/ProjectUpdates";
 import placeholder from "../assets/placeholder-1-1-1.png";
+import {
+  fetchProject,
+  fetchRewardsByProjectId,
+  fetchCreatorInfo,
+  fetchProjectCategories,
+  staffApproveProject,
+} from "../api/apiClient";
 
 const { Content } = Layout;
-const { Title, Paragraph, Text } = Typography;
-const { TabPane } = Tabs;
+const { Title, Text, Paragraph } = Typography;
+const { confirm } = Modal;
 
 const StaffProjectDetailPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [project, setProject] = useState(null);
   const [rewards, setRewards] = useState([]);
-  const [rewardsLoading, setRewardsLoading] = useState(false);
+  const [creator, setCreator] = useState(null);
+  const [activeTab, setActiveTab] = useState("1");
+  const [categories, setCategories] = useState([]);
+  const [rejectionReason, setRejectionReason] = useState("");
 
   useEffect(() => {
     const fetchProjectData = async () => {
@@ -36,246 +63,430 @@ const StaffProjectDetailPage = () => {
         const response = await fetchProject(id);
         if (response.data.success) {
           setProject(response.data.data);
-          // Fetch rewards after project data is loaded
-          fetchRewardsData(response.data.data["project-id"] || id);
-        } else {
-          console.error("Error fetching project:", response.data.message);
+          const categoriesResponse = await fetchProjectCategories(
+            response.data.data["project-id"] || id
+          );
+          if (categoriesResponse.data.success) {
+            setCategories(categoriesResponse.data.data || []);
+          }
+          if (response.data.data["creator-id"]) {
+            const creatorResponse = await fetchCreatorInfo(
+              response.data.data["creator-id"]
+            );
+            if (creatorResponse.data.success) {
+              setCreator(creatorResponse.data.data);
+            }
+          }
+          const rewardsResponse = await fetchRewardsByProjectId(
+            response.data.data["project-id"] || id
+          );
+          if (rewardsResponse.data.success) {
+            setRewards(rewardsResponse.data.data || []);
+          }
         }
       } catch (error) {
-        console.error("Error fetching project details:", error);
+        console.error("Error fetching project:", error);
       } finally {
         setLoading(false);
-      }
-    };
-
-    const fetchRewardsData = async (projectId) => {
-      try {
-        setRewardsLoading(true);
-        const response = await fetchRewardsByProjectId(projectId);
-        if (response.data.success) {
-          setRewards(response.data.data || []);
-        } else {
-          console.error("Error fetching rewards:", response.data.message);
-        }
-      } catch (error) {
-        console.error("Error fetching rewards:", error);
-      } finally {
-        setRewardsLoading(false);
       }
     };
 
     fetchProjectData();
   }, [id]);
 
-  if (loading)
+  const canApproveOrReject = () => {
+    if (!project) return false;
+
+    const now = new Date();
+    const endDate = new Date(project["end-datetime"]);
+
+    return (
+      project.status === "INVISIBLE" ||
+      (project.status === "PENDING" && now < endDate)
+    );
+  };
+
+  const handleApprove = (status) => {
+    let reason = "";
+
+    confirm({
+      title: `Are you sure you want to ${
+        status === "APPROVED" ? "approve" : "reject"
+      } this project?`,
+      icon: <ExclamationCircleOutlined />,
+      content:
+        status === "HALTED" ? (
+          <Input.TextArea
+            rows={4}
+            placeholder="Reason..."
+            onChange={(e) => {
+              reason = e.target.value;
+            }}
+          />
+        ) : null,
+      onOk() {
+        return staffApproveProject({
+          projectId: project["project-id"],
+          status,
+          reason: status === "HALTED" ? reason : "",
+        })
+          .then(() => {
+            message.success(
+              `Project ${
+                status === "ONGOING" ? "approved" : "rejected"
+              } successfully`
+            );
+            setProject((prev) => ({ ...prev, status }));
+          })
+          .catch((error) => {
+            message.error(
+              `Failed to ${status === "ONGOING" ? "approve" : "reject"} project`
+            );
+            console.error(error);
+          });
+      },
+    });
+  };
+
+  const getStatusTag = () => {
+    if (!project) return null;
+
+    const status = project.status || "PENDING";
+    const color = {
+      ONGOING: "green",
+      HALTED: "red",
+      DELETED: "orange",
+      INVISIBLE: "gray",
+    }[status];
+
+    return (
+      <Tag color={color} style={{ marginLeft: 8 }}>
+        {status}
+      </Tag>
+    );
+  };
+
+  const getTimeStatus = () => {
+    if (!project) return { text: "", days: 0 };
+
+    const now = new Date();
+    const startDate = new Date(project["start-datetime"]);
+    const endDate = new Date(project["end-datetime"]);
+
+    if (now < startDate) {
+      const days = Math.ceil((startDate - now) / (1000 * 60 * 60 * 24));
+      return { text: `Starts in ${days} days`, days, status: "upcoming" };
+    } else if (now >= startDate && now <= endDate) {
+      const days = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
+      return { text: `${days} days to go`, days, status: "ongoing" };
+    } else {
+      return { text: "Funding ended", days: 0, status: "ended" };
+    }
+  };
+
+  const timeStatus = getTimeStatus();
+
+  const items = [
+    {
+      key: "1",
+      label: "About",
+      children: (
+        <>
+          {project?.story ? (
+            <TipTapViewer content={project.story} />
+          ) : (
+            <Paragraph type="secondary">No story available.</Paragraph>
+          )}
+          <Divider />
+          <Title level={4}>Project Description</Title>
+          <Paragraph>
+            {project?.description || "No description available."}
+          </Paragraph>
+          {categories.length > 0 && (
+            <div style={{ marginTop: 8 }}>
+              {categories.map((category) => (
+                <Tag
+                  key={category["category-id"]}
+                  color="blue"
+                  style={{ marginRight: 8, marginBottom: 8 }}
+                >
+                  {category.name}
+                </Tag>
+              ))}
+            </div>
+          )}
+
+          {creator && (
+            <>
+              <Divider />
+              <Title level={4}>About the Creator</Title>
+              <Card>
+                <Row gutter={16} align="middle">
+                  <Col>
+                    <Avatar
+                      size={64}
+                      src={creator.avatar}
+                      icon={<UserOutlined />}
+                      style={{ backgroundColor: "#1890ff" }}
+                    />
+                  </Col>
+                  <Col flex="auto">
+                    <Title level={5} style={{ marginBottom: 4 }}>
+                      {creator["full-name"]}
+                    </Title>
+                    <Text
+                      type="secondary"
+                      style={{ display: "block", marginBottom: 8 }}
+                    >
+                      Joined:{" "}
+                      {new Date(
+                        creator["created-datetime"]
+                      ).toLocaleDateString()}
+                    </Text>
+                    {creator.bio && (
+                      <Paragraph style={{ marginBottom: 0 }}>
+                        {creator.bio}
+                      </Paragraph>
+                    )}
+                  </Col>
+                </Row>
+              </Card>
+            </>
+          )}
+        </>
+      ),
+    },
+    {
+      key: "2",
+      label: "Updates",
+      children: <ProjectUpdates updates={project?.updates || []} />,
+    },
+    {
+      key: "3",
+      label: "Comments",
+      children: <ProjectComments comments={project?.comments || []} />,
+    },
+  ];
+
+  if (loading) {
     return (
       <div style={{ textAlign: "center", padding: "50px" }}>
         <Spin size="large" />
       </div>
     );
-  if (!project) return <p>Project not found</p>;
+  }
 
-  const daysLeft = project["end-datetime"]
-    ? Math.max(
-        0,
-        Math.ceil(
-          (new Date(project["end-datetime"]) - new Date()) /
-            (1000 * 60 * 60 * 24)
-        )
-      )
-    : 0;
+  if (!project) {
+    return (
+      <Card>
+        <Result
+          status="404"
+          title="Project Not Found"
+          subTitle="The project you're looking for doesn't exist."
+          extra={
+            <Button type="primary" onClick={() => navigate("/staff/projects")}>
+              Back to Projects
+            </Button>
+          }
+        />
+      </Card>
+    );
+  }
 
   return (
-    <Content style={{ padding: "24px" }}>
+    <Content style={{ padding: "24px", maxWidth: 1200, margin: "0 auto" }}>
       <Row gutter={[24, 24]}>
-        <Col xs={24} md={16}>
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <div style={{ textAlign: "center", marginBottom: "16px" }}>
+        <Col xs={24} lg={16}>
+          <Card
+            title={
+              <Space>
+                <Title level={3} style={{ marginBottom: 0 }}>
+                  {project.title}
+                </Title>
+                {getStatusTag()}
+              </Space>
+            }
+            cover={
               <img
                 src={
-                  !project.thumbnail || project.thumbnail === "Null"
+                  !project.thumbnail || project.thumbnail === "unknown"
                     ? placeholder
                     : project.thumbnail
                 }
                 alt="Project Thumbnail"
                 style={{
                   width: "100%",
-                  maxHeight: "400px",
+                  padding: "10px",
+                  height: 400,
                   objectFit: "cover",
-                  borderRadius: "12px",
-                  border: "1px solid #d9d9d9",
-                  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-                  transition: "transform 0.3s ease-in-out",
+                  borderRadius: "15px",
                 }}
-                onMouseOver={(e) =>
-                  (e.currentTarget.style.transform = "scale(1.02)")
-                }
-                onMouseOut={(e) =>
-                  (e.currentTarget.style.transform = "scale(1)")
-                }
               />
-            </div>
-          </motion.div>
+            }
+            style={{ marginBottom: 24 }}
+          >
+            <Space direction="vertical" style={{ width: "100%" }}>
+              <Paragraph>{project.description}</Paragraph>
 
-          <Tabs defaultActiveKey="1" style={{ marginTop: 24 }} animated>
-            <TabPane tab="About" key="1">
-              {project.story ? (
-                <TipTapViewer content={project.story} />
-              ) : (
-                <Paragraph type="secondary">No story available.</Paragraph>
-              )}
-              <Divider />
-              <Title level={4}>Project Description</Title>
-              <Paragraph>
-                {project.description || "No description available."}
-              </Paragraph>
-            </TabPane>
-            <TabPane tab="Updates" key="2">
-              <ProjectUpdates updates={project.updates} />
-            </TabPane>
-            <TabPane tab="Comments" key="3">
-              <ProjectComments comments={project.comments} />
-            </TabPane>
-          </Tabs>
+              <Space split={<Divider type="vertical" />}>
+                <Text>
+                  <ClockCircleOutlined /> {timeStatus.text}
+                </Text>
+                <Text>
+                  <UserOutlined /> {project.backers || 0} backers
+                </Text>
+                <Text>
+                  Start at:{" "}
+                  {new Date(project["start-datetime"]).toLocaleDateString()}
+                </Text>
+                <Text>
+                  End at:{" "}
+                  {new Date(project["end-datetime"]).toLocaleDateString()}
+                </Text>
+              </Space>
+            </Space>
+          </Card>
+
+          <Card>
+            <Tabs activeKey={activeTab} onChange={setActiveTab} items={items} />
+          </Card>
         </Col>
 
-        <Col xs={24} md={8}>
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <Card
-              style={{
-                borderRadius: "12px",
-                background: "rgb(241, 223, 171)",
-                color: "white",
-                padding: "16px",
-                marginBottom: "24px",
-              }}
-            >
-              <Text strong style={{ fontSize: "26px", display: "block" }}>
-                {project["total-amount"] ? `$${project["total-amount"]}` : "$0"}
-              </Text>
-              <Paragraph style={{ marginBottom: 16 }}>
-                pledged of ${project["minimum-amount"] || "N/A"} goal
-              </Paragraph>
-
-              <Row justify="space-between" style={{ marginBottom: 16 }}>
-                <Col>
-                  <Title level={5} style={{ margin: 0 }}>
-                    Backers
-                  </Title>
-                  <Text strong style={{ fontSize: "20px" }}>
-                    {project.backers || 0}
-                  </Text>
-                </Col>
-                <Col>
-                  <Title level={5} style={{ margin: 0 }}>
-                    Days to go
-                  </Title>
-                  <Text
-                    strong
-                    style={{
-                      fontSize: "20px",
-                      color: daysLeft <= 3 ? "red" : "#1890ff",
-                    }}
+        <Col xs={24} lg={8}>
+          <Space direction="vertical" style={{ width: "100%" }}>
+            {canApproveOrReject() && (
+              <Card title="Project Approval">
+                <Space direction="vertical" style={{ width: "100%" }}>
+                  <Button
+                    type="primary"
+                    icon={<CheckCircleOutlined />}
+                    block
+                    onClick={() => handleApprove("ONGOING")}
                   >
-                    {daysLeft}
-                  </Text>
-                </Col>
-              </Row>
-              <Divider style={{ borderColor: "rgba(255,255,255,0.5)" }} />
+                    Approve Project
+                  </Button>
+
+                  <Button
+                    danger
+                    icon={<CloseCircleOutlined />}
+                    block
+                    onClick={() => handleApprove("HALTED")}
+                  >
+                    Reject Project
+                  </Button>
+                </Space>
+              </Card>
+            )}
+
+            <Card title="Funding Progress">
+              <Space direction="vertical" style={{ width: "100%" }}>
+                <Row justify="space-between" align="middle">
+                  <Col>
+                    <Text strong>
+                      <DollarOutlined />{" "}
+                      {project["total-amount"]?.toLocaleString() || 0}$
+                    </Text>
+                  </Col>
+                  <Col>
+                    <Text type="secondary">
+                      of {project["minimum-amount"]?.toLocaleString() || 0}$
+                      goal
+                    </Text>
+                  </Col>
+                </Row>
+
+                <Progress
+                  percent={Math.min(
+                    (project["total-amount"] / project["minimum-amount"]) *
+                      100 || 0,
+                    100
+                  )}
+                  status="active"
+                  strokeColor="#52c41a"
+                />
+
+                <Row gutter={16}>
+                  <Col span={12}>
+                    <div style={{ textAlign: "center" }}>
+                      <Text strong>
+                        <TeamOutlined /> Backers
+                      </Text>
+                      <Title level={3} style={{ margin: "8px 0" }}>
+                        {project.backers || 0}
+                      </Title>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <div style={{ textAlign: "center" }}>
+                      <Text strong>
+                        <CalendarOutlined /> Days Left
+                      </Text>
+                      <Title
+                        level={3}
+                        style={{
+                          margin: "8px 0",
+                          color: timeStatus.days <= 3 ? "#f5222d" : "inherit",
+                        }}
+                      >
+                        {timeStatus.days}
+                      </Title>
+                    </div>
+                  </Col>
+                </Row>
+              </Space>
             </Card>
 
-            {/* New Rewards Card */}
             <Card
-              title={
-                <div style={{ display: "flex", alignItems: "center" }}>
-                  <Title level={4} style={{ margin: 0 }}>
-                    Project Rewards
-                  </Title>
-                  <Tag color="gold" style={{ marginLeft: "8px" }}>
-                    {rewards.length} tiers
-                  </Tag>
-                </div>
-              }
-              style={{
-                borderRadius: "12px",
-                marginBottom: "24px",
-                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-              }}
+              title={`Rewards (${rewards.length})`}
+              bodyStyle={{ padding: rewards.length ? "16px" : 0 }}
             >
-              {rewardsLoading ? (
-                <div style={{ textAlign: "center", padding: "24px" }}>
-                  <Spin size="large" />
-                </div>
-              ) : rewards.length > 0 ? (
-                <div style={{ maxHeight: "500px", overflowY: "auto" }}>
-                  {rewards.map((reward, index) => (
-                    <Card
-                      key={reward["reward-id"] || index}
-                      style={{
-                        marginBottom: "16px",
-                        borderLeft: "4px solid #1890ff",
-                        borderRadius: "4px",
-                      }}
-                      bodyStyle={{ padding: "16px" }}
-                    >
-                      <div
+              {rewards.length > 0 ? (
+                <List
+                  itemLayout="vertical"
+                  dataSource={rewards}
+                  renderItem={(reward) => (
+                    <List.Item>
+                      <Card
+                        size="small"
                         style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          marginBottom: "8px",
+                          borderLeft: "3px solid #1890ff",
+                          width: "100%",
                         }}
                       >
-                        <Text strong style={{ fontSize: "16px" }}>
-                          Pledge ${reward.amount.toLocaleString()} or more
+                        <Title level={5} style={{ marginBottom: 8 }}>
+                          ${reward.amount.toLocaleString()} or more
+                        </Title>
+                        <Paragraph style={{ marginBottom: 0 }}>
+                          {reward.details || "No description provided"}
+                        </Paragraph>
+                        <Text
+                          type="secondary"
+                          style={{ display: "block", marginTop: 8 }}
+                        >
+                          Created:{" "}
+                          {new Date(
+                            reward["created-datetime"]
+                          ).toLocaleDateString()}
                         </Text>
-                        <Tag color="#87d068">Tier {index + 1}</Tag>
-                      </div>
-                      <Paragraph
-                        style={{
-                          marginBottom: 0,
-                          color: "#666",
-                          whiteSpace: "pre-line",
-                        }}
-                      >
-                        {reward.details || "No reward details provided"}
-                      </Paragraph>
-                      <Divider
-                        style={{
-                          margin: "12px 0",
-                          borderColor: "#f0f0f0",
-                        }}
-                      />
-                      <Text type="secondary" style={{ fontSize: "12px" }}>
-                        Created:{" "}
-                        {new Date(
-                          reward["created-datetime"]
-                        ).toLocaleDateString()}
-                      </Text>
-                    </Card>
-                  ))}
-                </div>
+                      </Card>
+                    </List.Item>
+                  )}
+                />
               ) : (
-                <Card
+                <div
                   style={{
                     textAlign: "center",
+                    padding: "24px 16px",
                     background: "#fafafa",
                   }}
                 >
-                  <Paragraph type="secondary" style={{ marginBottom: 0 }}>
+                  <Paragraph type="secondary">
                     No rewards available for this project
                   </Paragraph>
-                </Card>
+                </div>
               )}
             </Card>
-          </motion.div>
+          </Space>
         </Col>
       </Row>
     </Content>

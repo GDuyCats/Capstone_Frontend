@@ -24,6 +24,7 @@ import {
 } from "antd";
 import { UploadOutlined, SaveOutlined } from "@ant-design/icons";
 import TipTapEditor from "../components/TipTapEditor";
+import CategorySelector from "../components/MyProjectListPage/CategorySelector";
 import moment from "moment";
 
 const { TextArea } = Input;
@@ -53,8 +54,7 @@ const UserEditProject = () => {
           description: project.description,
           startDatetime: moment(project["start-datetime"]),
           endDatetime: moment(project["end-datetime"]),
-          status: project.status,
-          "minimum-amount": project["minimum-amount"],
+          minimumAmount: project["minimum-amount"],
         });
 
         setStory(project.story || "");
@@ -113,10 +113,11 @@ const UserEditProject = () => {
     try {
       setUpdatingBasic(true);
       const payload = {
-        ...values,
-        "start-datetime": values.startDatetime.format("YYYY-MM-DDTHH:mm:ss[Z]"),
-        "end-datetime": values.endDatetime.format("YYYY-MM-DDTHH:mm:ss[Z]"),
-        "minimum-amount": values["minimum-amount"],
+        Description: values.description,
+        Name: values.title,
+        StartDatetime: values.startDatetime.toISOString(),
+        EndDatetime: values.endDatetime.toISOString(),
+        MinimumAmount: values.minimumAmount,
       };
 
       await updateProject(projectId, payload);
@@ -140,7 +141,7 @@ const UserEditProject = () => {
                 form={form}
                 layout="vertical"
                 onFinish={handleUpdateBasicInfo}
-                initialValues={{ status: "INVISIBLE" }}
+                initialValues={{}}
               >
                 <Form.Item
                   label="Title"
@@ -164,10 +165,9 @@ const UserEditProject = () => {
                 >
                   <TextArea rows={4} />
                 </Form.Item>
-
                 <Form.Item
                   label="Minimum Amount"
-                  name="minimum-amount"
+                  name="minimumAmount"
                   rules={[
                     { required: true, message: "Please input minimum amount!" },
                     {
@@ -178,7 +178,6 @@ const UserEditProject = () => {
                 >
                   <Input type="number" prefix="$" />
                 </Form.Item>
-
                 <Form.Item
                   label="Start Date"
                   name="startDatetime"
@@ -217,17 +216,6 @@ const UserEditProject = () => {
                   />
                 </Form.Item>
 
-                <Form.Item
-                  label="Status"
-                  name="status"
-                  rules={[{ required: true, message: "Please select status!" }]}
-                >
-                  <Select>
-                    <Option value="VISIBLE">Visible</Option>
-                    <Option value="INVISIBLE">Invisible</Option>
-                  </Select>
-                </Form.Item>
-
                 <Form.Item>
                   <Button
                     type="primary"
@@ -237,6 +225,9 @@ const UserEditProject = () => {
                   >
                     Save Basic Information
                   </Button>
+                </Form.Item>
+                <Form.Item label="Categories">
+                  <CategorySelector projectId={projectId} />
                 </Form.Item>
               </Form>
             </Card>
