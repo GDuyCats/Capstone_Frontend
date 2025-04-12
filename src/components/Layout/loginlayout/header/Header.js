@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link } from 'react-router-dom'
-import logo from "../../../../assets/470178924_1237016580742747_363138670710016911_n.jpg"
+import { Link } from "react-router-dom";
+import logo from "../../../../assets/logo.png";
 function Header() {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -32,8 +32,8 @@ function Header() {
       <div className="bg-steam brightness-125 w-screen z-50 flex flex-row justify-center items-center h-[100px] relative space-x-[70px] md:pr-[80px] md:space-x-[10px] lg:pr-0 lg:space-x-[180px] xl:pr-0 xl:space-x-[270px] 2xl:pr-0 2xl:space-x-[280px]">
         {/* Logo */}
         <div className="flex flex-row justify-center items-center space-x-2 lg:mr-0 mr-10 hover:scale-105 transition-transform duration-300 cursor-pointer">
-          <img src={logo} alt="logo" className="w-[50px] rounded-full" />
-          <h1 className="text-slate-300 font-bold text-2xl">GAMEMKT</h1>
+          <img src={logo} alt="logo" className="w-[150px] rounded-full" />
+          {/* <h1 className="text-slate-300 font-bold text-2xl"></h1> */}
         </div>
 
         {/* Nút hamburger cho màn hình nhỏ */}
@@ -57,27 +57,20 @@ function Header() {
         </button>
 
         {/* Menu cho màn hình lớn */}
-        <div className="hidden md:flex md:space-x-10 ">
-          {["CỬA HÀNG", "CỘNG ĐỒNG", "THÔNG TIN", "HỖ TRỢ"].map((item) => (
-            <Link to={"/register"}>
-              <span
-                key={item}
-                className="text-slate-200 inline-block font-bold hover:scale-105 cursor-pointer transition-transform duration-300 active:underline"
-              >
-                {item}
-              </span>
-            </Link>
-          ))}
-        </div>
-        <div className="hidden lg:flex items-start cursor-pointer transition-transform duration-300 hover:scale-105 ">
-          <Link to={"/login"}>
-            <span className="text-slate-200 underline">
-              Đăng nhập
+
+        <div className="hidden lg:flex items-center space-x-6">
+          <Link to={"/"}>
+            <span className="text-slate-200 underline cursor-pointer hover:scale-105 transition-transform duration-300">
+              Back to store
+            </span>
+          </Link>
+          <Link to={"/register"}>
+            <span className="text-slate-200 underline cursor-pointer hover:scale-105 transition-transform duration-300">
+              Register
             </span>
           </Link>
         </div>
       </div>
-
 
       {/* Menu dropdown cho màn hình nhỏ */}
       <AnimatePresence>
@@ -96,22 +89,20 @@ function Header() {
               scrollbar scrollbar-track-black scrollbar-thumb-slate-700"
               onClick={(e) => e.stopPropagation()} // Ngăn đóng khi nhấn vào modal
             >
-              {["CỬA HÀNG", "CỘNG ĐỒNG", "THÔNG TIN",
-                "HỖ TRỢ"].map((item) => (
-                  <div
-                    key={item}
-                    className="border-t-[1px] border-t-header-2 border-b-[1px] border-b-black w-full 
+              {["CỬA HÀNG", "CỘNG ĐỒNG", "THÔNG TIN", "HỖ TRỢ"].map((item) => (
+                <div
+                  key={item}
+                  className="border-t-[1px] border-t-header-2 border-b-[1px] border-b-black w-full 
                      text-slate-200 text-3xl font-semibold hover:brightness-150 cursor-pointer p-3"
-                  >
-                    {item}
-                  </div>
-                ))}
+                >
+                  {item}
+                </div>
+              ))}
             </motion.div>
-
           </motion.div>
         )}
       </AnimatePresence>
-    </div >
+    </div>
   );
 }
 

@@ -1,20 +1,21 @@
-import React, { useState, useRef } from 'react';
-import Footer from '../Layout/registerlayout/footer/Footer';
-import ReCAPTCHA from 'react-google-recaptcha';
-import axios from 'axios';
+import React, { useState, useRef } from "react";
+import Footer from "../Layout/registerlayout/footer/Footer";
+import ReCAPTCHA from "react-google-recaptcha";
+import axios from "axios";
 
 const Register = () => {
   const [captchaValue, setCaptchaValue] = useState(null);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [fullname, setFullname] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [fullname, setFullname] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
   const [errorList, setErrorList] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false); // ✅ Ngăn spam nút
 
   const recaptchaRef = useRef(null);
-  const sitekey = process.env.REACT_APP_RECAPTCHA_SITE_KEY || "your_default_site_key_here";
+  const sitekey =
+    process.env.REACT_APP_RECAPTCHA_SITE_KEY || "your_default_site_key_here";
 
   const handleCaptchaChange = (value) => {
     setCaptchaValue(value);
@@ -25,7 +26,7 @@ const Register = () => {
     if (isSubmitting) return; // ✅ Chặn spam nhiều lần
     setIsSubmitting(true); // ✅ Ngăn người dùng bấm nhiều lần
 
-    setSuccessMsg('');
+    setSuccessMsg("");
     setErrorList([]);
 
     if (password !== confirmPassword) {
@@ -36,25 +37,24 @@ const Register = () => {
 
     try {
       const response = await axios.post(
-        'https://marvelous-gentleness-production.up.railway.app/api/Authentication/register',
+        "https://marvelous-gentleness-production.up.railway.app/api/Authentication/register",
         {
           email,
           password,
           "confirm-password": confirmPassword,
-          fullname
+          fullname,
         }
       );
 
       setErrorList([]);
-      setSuccessMsg(response.data?.message || 'Đăng ký thành công!');
+      setSuccessMsg(response.data?.message || "Register successfully!");
 
-      setEmail('');
-      setPassword('');
-      setConfirmPassword('');
-      setFullname('');
+      setEmail("");
+      setPassword("");
+      setConfirmPassword("");
+      setFullname("");
       setCaptchaValue(null);
       if (recaptchaRef.current) recaptchaRef.current.reset();
-
     } catch (err) {
       const data = err.response?.data;
       const errors = data?.errors;
@@ -68,7 +68,7 @@ const Register = () => {
       } else if (data?.message) {
         setErrorList([data.message]);
       } else {
-        setErrorList(['Đăng ký thất bại.']);
+        setErrorList(["Register unsuccessfully."]);
       }
     } finally {
       setIsSubmitting(false); // ✅ Mở lại nút sau khi API phản hồi
@@ -78,16 +78,42 @@ const Register = () => {
   return (
     <div className="min-h-screen flex flex-col bg-steam items-center">
       <div className="h-auto max-w-7xl flex flex-col items-start mr-0 lg:mr-[500px] pl-3 lg:pl-0">
-        <div className='my-10'>
-          <h1 className='text-5xl text-slate-200'>Tạo tài khoản của bạn</h1>
+        <div className="my-10">
+          <h1 className="text-5xl text-slate-200">
+            Create your own account here
+          </h1>
         </div>
 
         <form onSubmit={handleRegister}>
-          <div className='my-2 space-y-3'>
-            <InputField id="email" label="Email" type="email" value={email} onChange={e => setEmail(e.target.value)} />
-            <InputField id="password" label="Password" type="password" value={password} onChange={e => setPassword(e.target.value)} />
-            <InputField id="confirm-password" label="Confirm Password" type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
-            <InputField id="fullname" label="Fullname" type="text" value={fullname} onChange={e => setFullname(e.target.value)} />
+          <div className="my-2 space-y-3">
+            <InputField
+              id="email"
+              label="Email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <InputField
+              id="password"
+              label="Password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <InputField
+              id="confirm-password"
+              label="Confirm Password"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+            <InputField
+              id="fullname"
+              label="Fullname"
+              type="text"
+              value={fullname}
+              onChange={(e) => setFullname(e.target.value)}
+            />
           </div>
 
           <div className="flex justify-center mt-2 mb-4">
@@ -102,10 +128,14 @@ const Register = () => {
           <button
             type="submit"
             className={`mt-2 bg-blue-500 text-white px-4 py-2 rounded w-[200px] 
-              ${!captchaValue || isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
+              ${
+                !captchaValue || isSubmitting
+                  ? "opacity-50 cursor-not-allowed"
+                  : ""
+              }`}
             disabled={!captchaValue || isSubmitting}
           >
-            {isSubmitting ? "Đang xử lý..." : "Tiếp tục"}
+            {isSubmitting ? "Processing..." : "Next"}
           </button>
         </form>
 

@@ -1,15 +1,10 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Layout } from "antd";
 import ProjectList from "../components/ProjectList";
 import { Typography } from "antd";
-import useAuth from "../components/Hooks/useAuth";
 const { Content } = Layout;
 
 const HomePage = () => {
-  const { auth} = useAuth();
-  useEffect(() => {
-    console.log(auth)
-  }, [auth])
   return (
     <Layout style={{ minHeight: "100vh" }}>
       <Layout>
@@ -24,4 +19,4 @@ const HomePage = () => {
   );
 };
 
-export default HomePage;
+export default React.memo(HomePage);

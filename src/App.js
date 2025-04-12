@@ -9,8 +9,6 @@ import ProfilePage from "./pages/profilePage";
 import UserProfilePage from "./pages/UserProfilePage";
 import LoginLayout from "./components/Layout/loginlayout/LoginLayout";
 import RegisterLayout from "./components/Layout/registerlayout/RegisterLayout";
-import GamePage from "./pages/GamePage";
-import GameDetailPage from "./pages/GameDetailPage";
 import AdminProjectListPage from "./pages/AdminProjectListPage";
 import AdminProjectDetailPage from "./pages/AdminProjectDetailPage";
 import StaffProjectDetailPage from "./pages/StaffProjectDetailPage";
@@ -20,45 +18,72 @@ import InvisibleProjects from "./pages/InvisibleProjectsPage";
 import ApprovedProjects from "./pages/ApprovedProjectPage";
 import MyProjectList from "./pages/MyProjectListPage";
 import UserEditProject from "./pages/UserEditProject";
+import FileManagerPage from "./pages/FileManagerPage";
+import CreatorProfilePage from "./pages/CreatorProfilePage";
+import PaymentResult from "./pages/PaymentResult";
+import PledgesPage from "./pages/PledgesPage";
+import FaqManagementPage from "./pages/FaqManagementPage";
+import CollaboratorManagementPage from "./pages/CollaboratorManagementPage";
 
 function App() {
   return (
     <Routes>
       <Route path="/" element={<LayoutCom />}>
         {/* 🔥 Đảm bảo Staff không thể truy cập một số trang nhất định */}
+        <Route path="/payment/result" element={<PaymentResult />} />
         <Route
-          element={<RequireAuth restrictedRoles={["Staff"]} redirectTo="invisible-projects" />}
+          element={
+            <RequireAuth
+              restrictedRoles={["STAFF"]}
+              redirectTo="invisible-projects"
+            />
+          }
         >
           <Route index element={<HomePage />} />
-          <Route path="task" element={<TaskPage />} />
-          <Route path="games" element={<GamePage />} />
-          <Route path="game/:id" element={<GameDetailPage />} />
+          <Route path="/creator/:id" element={<CreatorProfilePage />} />
           <Route path="project/:id" element={<ProjectDetailPage />} />
         </Route>
 
         {/* 🔐 Admin routes */}
-        <Route element={<RequireAuth roles={["Admin"]} />}>
+        <Route element={<RequireAuth roles={["ADMIN"]} />}>
           <Route path="admin/projects" element={<AdminProjectListPage />} />
-          <Route path="admin/project/:id" element={<AdminProjectDetailPage />} />
+          <Route
+            path="admin/project/:id"
+            element={<AdminProjectDetailPage />}
+          />
         </Route>
 
         {/* 🔐 Staff routes */}
-        <Route element={<RequireAuth roles={["Staff"]} />}>
+        <Route element={<RequireAuth roles={["STAFF"]} />}>
           <Route path="invisible-projects" element={<InvisibleProjects />} />
           <Route path="approved-projects" element={<ApprovedProjects />} />
-          <Route path="staff/project/:id" element={<StaffProjectDetailPage />} />
+          <Route
+            path="staff/project/:id"
+            element={<StaffProjectDetailPage />}
+          />
         </Route>
 
         {/* 🔐 Customer routes */}
-        <Route element={<RequireAuth roles={["Customer"]} />}>
+        <Route element={<RequireAuth roles={["CUSTOMER"]} />}>
           <Route path="create-project" element={<CreateProjectForm />} />
           <Route path="my-projects" element={<MyProjectList />} />
+          <Route path="manage-faqs" element={<FaqManagementPage />} />
           <Route path="edit-project/:projectId" element={<UserEditProject />} />
+          <Route path="/pledges" element={<PledgesPage />} />
+          <Route
+            path="manage-collaborators"
+            element={<CollaboratorManagementPage />}
+          />
+          <Route
+            path="manage-collaborators/:projectId"
+            element={<CollaboratorManagementPage />}
+          />
         </Route>
 
         {/* 🔐 Các role chung */}
-        <Route element={<RequireAuth roles={["Admin", "Staff", "Customer"]} />}>
+        <Route element={<RequireAuth roles={["ADMIN", "STAFF", "CUSTOMER"]} />}>
           <Route path="profile" element={<ProfilePage />} />
+          <Route path="files" element={<FileManagerPage />} />
         </Route>
 
         {/* ✅ Profile không giới hạn quyền */}

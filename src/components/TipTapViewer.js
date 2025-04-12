@@ -14,6 +14,7 @@ import CodeBlock from "@tiptap/extension-code-block";
 import TextStyle from "@tiptap/extension-text-style";
 import Color from "@tiptap/extension-color";
 import { Extension } from "@tiptap/core";
+import Image from "@tiptap/extension-image";
 import React, { useEffect } from "react";
 
 const FontSize = Extension.create({
@@ -46,6 +47,7 @@ const TipTapViewer = ({ content }) => {
         orderedList: false,
       }),
       Bold,
+      Image,
       Italic,
       Underline,
       Strike,

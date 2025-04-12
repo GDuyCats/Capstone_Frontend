@@ -30,25 +30,24 @@ const Loginform = () => {
       const token = response.data?.token;
       const user = response.data?.user || { username };
       const role = response.data?.role;
-
+      const id = response.data?.hint;
       if (token) {
-        setAuth({ token, user, role });
-        setSuccessMsg(response.data?.message || "Đăng nhập thành công!");
+        setAuth({ token, user, role, id });
+        setSuccessMsg(response.data?.message || "log in successfully!");
         setErrorMsg("");
         console.log("Token:", token);
         console.log("User:", user);
         console.log("User:", role);
         setTimeout(() => {
-          navigate('/');
+          navigate("/");
         }, 1000);
-
       } else {
-        setErrorMsg("Không nhận được token từ máy chủ!");
+        setErrorMsg("Can't access to the token!");
         setSuccessMsg("");
       }
     } catch (err) {
       setSuccessMsg("");
-      setErrorMsg(err.response?.data?.message || "Đăng nhập thất bại!");
+      setErrorMsg(err.response?.data?.message || "log in unsuccessfully!");
     }
   };
 
@@ -58,7 +57,7 @@ const Loginform = () => {
         <div className="relative flex flex-col w-full max-w-2xl md:bg-white mt-52 mb-52">
           <Link to={"/login"}>
             <span className="absolute inline-block hover:scale-105 transition-transform duration-300 cursor-pointer left-[65px] -top-[215px] md:left-0 md:-top-20 text-3xl font-extrabold text-center mb-4 text-white">
-              Đăng Nhập
+              Log in
             </span>
           </Link>
 
@@ -82,7 +81,7 @@ const Loginform = () => {
                       htmlFor="username"
                       className="absolute cursor-text left-0 -top-6 md:-top-3 text-sm text-blue_steam bg-inherit mx-1 px-1 peer-placeholder-shown:text-base peer-placeholder-shown:text-slate-200 md:peer-placeholder-shown:text-blue_steam peer-placeholder-shown:top-2 peer-focus:-top-8 md:peer-focus:-top-3 peer-focus:text-blue_steam peer-focus:text-sm transition-all font-medium"
                     >
-                      Đăng nhập bằng tên khoản
+                      UserName
                     </label>
                   </div>
                 </div>
@@ -105,28 +104,26 @@ const Loginform = () => {
                       htmlFor="password"
                       className="absolute cursor-text left-0 -top-6 md:-top-3 text-sm text-blue_steam bg-inherit mx-1 px-1 peer-placeholder-shown:text-base peer-placeholder-shown:top-2 peer-focus:-top-8 md:peer-focus:-top-3 peer-placeholder-shown:text-slate-200 md:peer-placeholder-shown:text-blue_steam peer-focus:text-blue_steam peer-focus:text-sm transition-all font-medium"
                     >
-                      Mật khẩu
+                      Password
                     </label>
                   </div>
                 </div>
               </div>
 
               {/* Remember me */}
-              <div className="flex flex-grow space-x-2 pl-7 pt-2 hover:scale-105 transition-transform duration-300">
+              {/* <div className="flex flex-grow space-x-2 pl-7 pt-2 hover:scale-105 transition-transform duration-300">
                 <input type="checkbox" className="accent-blue_steam" />
                 <label className="text-blue_steam md:text-slate-700 font-bold">
                   Ghi nhớ tôi
                 </label>
-              </div>
+              </div> */}
 
               {/* Submit button */}
               <button
                 type="submit"
                 className="flex cursor-pointer hover:scale-105 transition-transform duration-300 rounded-sm justify-center items-center w-auto h-auto py-2 ml-[45px] mr-9 md:ml-14 md:mr-8 bg-gradient-to-r from-blue_steam to-blue_steam_login"
               >
-                <label className="text-white text-xl font-bold">
-                  Đăng nhập
-                </label>
+                <label className="text-white text-xl font-bold">Log in</label>
               </button>
 
               {/* Success message */}
@@ -158,9 +155,9 @@ const Loginform = () => {
               )}
 
               <div className="pl-2 md:pl-8 mx-auto py-4">
-                <span className="text-xs inline-block cursor-pointer hover:underline hover:scale-105 transition-transform duration-300 text-blue_steam md:text-black">
+                {/* <span className="text-xs inline-block cursor-pointer hover:underline hover:scale-105 transition-transform duration-300 text-blue_steam md:text-black">
                   Quên mật khẩu
-                </span>
+                </span> */}
               </div>
             </div>
 
@@ -168,12 +165,12 @@ const Loginform = () => {
             <div className="relative mx-4 my-1 w-1 h-auto bg-gradient-to-b from-transparent via-blue_steam to-transparent shadow-lg"></div>
 
             {/* Right Side */}
-            <div className="flex flex-col pt-0 pb-5 md:pt-7 md:pr-8 pr-10">
+            {/* <div className="flex flex-col pt-0 pb-5 md:pt-7 md:pr-8 pr-10">
               <label className="text-blue_steam font-semibold">
                 Đăng nhập bằng nền tảng khác
               </label>
               <Otherlogin />
-            </div>
+            </div> */}
           </div>
 
           {/* Mobile footer */}

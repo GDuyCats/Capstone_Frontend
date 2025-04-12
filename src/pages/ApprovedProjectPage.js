@@ -52,7 +52,7 @@ const ApprovedProjects = () => {
       render: (thumbnail) => (
         <img
           src={
-            !thumbnail || thumbnail === "Null" || thumbnail.trim() === ""
+            !thumbnail || thumbnail === "Unknown" || thumbnail.trim() === ""
               ? placeholder
               : thumbnail
           }

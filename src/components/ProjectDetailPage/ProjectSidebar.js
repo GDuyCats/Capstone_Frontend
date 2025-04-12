@@ -20,10 +20,14 @@ import {
 } from "antd";
 import { UserOutlined, DollarOutlined, GiftOutlined } from "@ant-design/icons";
 import { motion } from "framer-motion";
+import { message } from "antd";
+import { createPaypalPayment } from "../../api/apiClient";
+import useAuth from "../Hooks/useAuth";
 
 const { Title, Text, Paragraph } = Typography;
 
 const ProjectSidebar = ({ project, rewards = [] }) => {
+  const { auth } = useAuth();
   const [pledgeModalVisible, setPledgeModalVisible] = useState(false);
   const [selectedReward, setSelectedReward] = useState(null);
   const [pledgeAmount, setPledgeAmount] = useState(0);
@@ -72,7 +76,7 @@ const ProjectSidebar = ({ project, rewards = [] }) => {
     rewards?.map((reward) => ({
       id: reward["reward-id"],
       amount: reward.amount,
-      title: `Pledge ${reward.amount.toLocaleString()}đ`,
+      title: `Pledge ${reward.amount.toLocaleString()}$`,
       description: reward.details,
       createdDate: reward["created-datetime"],
       remaining: reward.remaining,
@@ -92,9 +96,30 @@ const ProjectSidebar = ({ project, rewards = [] }) => {
       ? "active"
       : "exception";
 
-  const handlePledge = (values) => {
-    console.log("Pledge values:", values);
-    setPledgeModalVisible(false);
+  const handlePledge = async (values) => {
+    try {
+      const hide = message.loading("Processing payment...", 0);
+      const response = await createPaypalPayment(
+        project["project-id"],
+        values.amount
+      );
+      hide();
+
+      console.log("Full PayPal response:", response); // Debug
+
+      if (response.data?.data) {
+        window.location.href = response.data.data;
+      } else {
+        message.error("Invalid PayPal URL received");
+      }
+    } catch (error) {
+      console.error("Payment error:", error);
+      message.error(
+        error.response?.data?.message || "Payment failed. Please try again."
+      );
+    } finally {
+      setPledgeModalVisible(false);
+    }
   };
 
   const displayAPIDate = (dateString) => {
@@ -142,10 +167,10 @@ const ProjectSidebar = ({ project, rewards = [] }) => {
               />
 
               <Title level={2} style={{ margin: "16px 0 0 0" }}>
-                {safeProject.currentAmount.toLocaleString()}đ
+                {safeProject.currentAmount.toLocaleString()}$
               </Title>
               <Text type="secondary">
-                pledged of {safeProject.goalAmount.toLocaleString()}đ goal
+                pledged of {safeProject.goalAmount.toLocaleString()}$ goal
               </Text>
             </div>
 
@@ -186,7 +211,9 @@ const ProjectSidebar = ({ project, rewards = [] }) => {
               size="large"
               block
               icon={<DollarOutlined />}
-              disabled={daysLeft <= 0}
+              disabled={
+                daysLeft <= 0 || auth?.id === project["creator-id"] || !auth
+              }
               onClick={() => {
                 setSelectedReward(null);
                 setPledgeAmount(0);
@@ -264,7 +291,7 @@ const ProjectSidebar = ({ project, rewards = [] }) => {
                       }}
                     >
                       <Text strong style={{ fontSize: 16 }}>
-                        Pledge {reward.amount.toLocaleString()}đ or more
+                        Pledge {reward.amount.toLocaleString()}$ or more
                       </Text>
                       <Space>
                         {reward.remaining !== undefined && (
@@ -302,8 +329,8 @@ const ProjectSidebar = ({ project, rewards = [] }) => {
                       block
                       disabled={
                         daysLeft <= 0 ||
-                        (reward.remaining !== undefined &&
-                          reward.remaining <= 0)
+                        auth?.id === project["creator-id"] ||
+                        !auth
                       }
                       onClick={() => {
                         setSelectedReward(reward.id);
@@ -435,7 +462,7 @@ const ProjectSidebar = ({ project, rewards = [] }) => {
                             }}
                           >
                             <Text strong style={{ fontSize: 16 }}>
-                              {reward.amount.toLocaleString()}đ or more
+                              ${reward.amount.toLocaleString()} or more
                             </Text>
                             <Space>
                               {reward.remaining !== undefined && (
@@ -473,7 +500,7 @@ const ProjectSidebar = ({ project, rewards = [] }) => {
                     ? Promise.resolve()
                     : Promise.reject(
                         new Error(
-                          `Minimum amount is ${minAmount.toLocaleString()}đ`
+                          `Minimum amount is $${minAmount.toLocaleString()}`
                         )
                       );
                 },
@@ -481,7 +508,7 @@ const ProjectSidebar = ({ project, rewards = [] }) => {
             ]}
           >
             <Input
-              prefix="đ"
+              prefix="$"
               type="number"
               size="large"
               min={
@@ -497,7 +524,7 @@ const ProjectSidebar = ({ project, rewards = [] }) => {
                   ? `Minimum: ${
                       formattedRewards.find((r) => r.id === selectedReward)
                         ?.amount || 0
-                    }đ`
+                    }$`
                   : "Enter amount"
               }
               style={{ borderRadius: 4 }}
@@ -516,7 +543,7 @@ const ProjectSidebar = ({ project, rewards = [] }) => {
                     dataSource={getEligibleRewards(pledgeAmount)}
                     renderItem={(reward) => (
                       <List.Item>
-                        <Text strong>{reward.amount.toLocaleString()}đ:</Text>{" "}
+                        <Text strong>{reward.amount.toLocaleString()}$:</Text>{" "}
                         {reward.description}
                       </List.Item>
                     )}
